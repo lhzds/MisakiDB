@@ -2,7 +2,6 @@
 #include <bits/stdc++.h>
 
 namespace MisakiDB {
-using NameType = std::string;
 using KeyType = std::string;
 using ValueType = std::string;
 using RecordIDType = uint64_t;
@@ -15,5 +14,5 @@ constexpr PageIDType INVALID_PAGE_ID { std::numeric_limits<uint64_t>::max() };
 
 constexpr size_t PAGE_SIZE { 4096 };
 
-uint16_t SERVER_PORT { 8888 };
+constexpr uint16_t SERVER_PORT { 8888 };
 }
