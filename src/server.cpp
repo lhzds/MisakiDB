@@ -122,7 +122,7 @@ void Server::serve_helper(SOCKET clientSocket) {
       KeyType key { message.substr(index) };
 
       // Perform get operation
-      message = database->get(key);
+      if (database->get(key, message)) message = "GET FAILED: KEY DOES NOT EXIST";
 
       // Reply message
       send(clientSocket, message.c_str(), message.length(), 0);
@@ -152,7 +152,7 @@ void Server::serve_helper(SOCKET clientSocket) {
 
       // Perform remove operation
       if (database->remove(key)) message = "REMOVE SUCCESSFUL";
-      else message = "REMOVE FAILED: KEY NOT EXIST";
+      else message = "REMOVE FAILED: KEY DOES NOT EXIST";
 
       // Reply message
       send(clientSocket, message.c_str(), message.length(), 0);
