@@ -1,7 +1,7 @@
 #pragma once
 #include "globals.h"
 #include "page/page.h"
-#include "file_manager/file_manager.h"
+#include "file_store/file_store.h"
 
 namespace MisakiDB {
 class BufferPoolManager
@@ -13,6 +13,6 @@ public:
   Page addPage(PageIDType pageID);
 
 private:
-  FileManager &fileManager;
+  FileStore &fileManager;
 };
 }

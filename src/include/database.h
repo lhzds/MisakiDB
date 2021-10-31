@@ -3,9 +3,9 @@
 #include "options.h"
 #include "b_plus_tree.h"
 #include "data_accessor.h"
-#include "buffer_pool_manager.h"
-#include "file_manager/index_file_manager.h"
-#include "file_manager/data_file_manager.h"
+#include "buffer/buffer_pool_manager.h"
+#include "file_store/index_file_store.h"
+#include "file_store/data_file_store.h"
 
 namespace MisakiDB {
     class DataBase
@@ -40,8 +40,8 @@ namespace MisakiDB {
         BPlusTree m_bPlusTree;
         DataAccessor m_dataAccessor;
         BufferPoolManager m_indexBufferPoolManager, m_dataBufferPoolManager;
-        IndexFileManager m_indexFileManager;
-        DataFileManager m_dataFileManager;
+        IndexFileStore m_indexFileManager;
+        DataFileStore m_dataFileManager;
 
         std::shared_mutex m_readWriteLock;
     };
