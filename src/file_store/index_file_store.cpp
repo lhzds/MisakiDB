@@ -1,22 +1,23 @@
 #include "file_store/index_file_store.h"
 
 namespace MisakiDB{
-IndexFileStore::IndexFileStore(const std::string &dbName) {
-  //:m_indexFilename(dbName + "\\idx.mdb") {
-//  m_indexFileIO.open(m_indexFilename, std::ios::binary | std::ios::in | std::ios::out | std::ios::app);
-//  // if file not exist
-//  if (!m_indexFileIO.is_open()) {
-//    m_indexFileIO.clear();
-//
-//    // create new file
-//    m_indexFileIO.open(m_indexFilename, std::ios::out);
-//    m_indexFileIO.close();
-//
-//    // reopen the newly created file
-//    m_indexFileIO.open(m_indexFilename, std::ios::binary | std::ios::in | std::ios::out | std::ios::app);
-//    if (!m_indexFileIO.is_open()) {
-//      throw "fail to open index file";
-//    }
+IndexFileStore::IndexFileStore(const std::string &dbName)
+  :m_indexFilename(dbName + "\\idx.mdb") {
+  m_indexFileIO.open(m_indexFilename, std::ios::binary | std::ios::in | std::ios::out | std::ios::app);
+  // if file not exist
+  if (!m_indexFileIO.is_open()) {
+    m_indexFileIO.clear();
+  
+    // create new file
+    m_indexFileIO.open(m_indexFilename, std::ios::out);
+    m_indexFileIO.close();
+  
+    // reopen the newly created file
+    m_indexFileIO.open(m_indexFilename, std::ios::binary | std::ios::in | std::ios::out | std::ios::app);
+    if (!m_indexFileIO.is_open()) {
+      throw "fail to open index file";
+    }
+  }
 }
 
 IndexFileStore::~IndexFileStore() {
@@ -24,11 +25,9 @@ IndexFileStore::~IndexFileStore() {
 }
 
 void IndexFileStore::getRawPage(PageIDType pageID, ByteType *raw) {
-  if (isValidPageID(pageID, m_indexFilename)) {
-    throw "invalid pageID for getRawPage of IndexFileStore";
-  }
+  FileSizeType offset = pageIDToOffset(pageID);
   
-  m_indexFileIO.seekg(pageIDToOffset(pageID));
+  m_indexFileIO.seekg(offset);
   m_indexFileIO.read((char *)raw, PAGE_SIZE);
   if (!m_indexFileIO) {
     throw "IO error while reading index file";
@@ -41,11 +40,9 @@ void IndexFileStore::getRawPage(PageIDType pageID, ByteType *raw) {
 }
 
 void IndexFileStore::writeRawPage(PageIDType pageID, const ByteType *raw) {
-  if (isValidPageID(pageID, m_indexFilename)) {
-    throw "invalid pageID for writeRawPage of IndexFileStore";
-  }
+  FileSizeType offset = pageIDToOffset(pageID);
   
-  m_indexFileIO.seekp(pageIDToOffset(pageID));
+  m_indexFileIO.seekp(offset);
   m_indexFileIO.write((char *)raw, PAGE_SIZE);
   
   if (!m_indexFileIO) {
@@ -57,5 +54,5 @@ void IndexFileStore::close() {
   m_indexFileIO.close();
 }
 }
-}
+
 
