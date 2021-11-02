@@ -6,7 +6,7 @@ PageIDType IndexFileHeader::getNextPageId() const {
   return m_nextPageID;
 }
 void IndexFileHeader::setNextPageId(PageIDType nextPageId) {
-  m_nextPageID = MNextPageId;
+  m_nextPageID = nextPageId;
 }
 PageIDType IndexFileHeader::getRootPageId() const {
   return m_rootPageID;

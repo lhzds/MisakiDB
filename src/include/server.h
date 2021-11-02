@@ -10,8 +10,8 @@ namespace MisakiDB {
     public:
         Server();
         ~Server();
-        void create(const NameType &databaseName, const Options &options);
-        void close(const NameType &databaseName);
+        void create(const std::string &databaseName, const Options &options);
+        void close(const std::string &databaseName);
 
         ValueType get(const KeyType &key) const;
         ValueType get(const KeyType &key1, const KeyType &key2) const;

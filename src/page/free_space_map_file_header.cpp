@@ -1,11 +1,11 @@
 #include "page/free_space_map_file_header.h"
 
 namespace MisakiDB {
-uint64_t FreeSpaceMapFileHeader::getFreeSpaceMapFilePageNum() const {
-  return m_freeSpaceMapFilePageNum;
+uint64_t FreeSpaceMapFileHeader::getNextPageID() const {
+  return m_nextPageID;
 }
-void FreeSpaceMapFileHeader::setFreeSpaceMapFilePageNum(uint64_t freeSpaceMapFilePageNum) {
-  m_freeSpaceMapFilePageNum = freeSpaceMapFilePageNum;
+void FreeSpaceMapFileHeader::setNextPageID(uint64_t nextPageID) {
+  m_nextPageID = nextPageID;
 }
 }
 

@@ -8,7 +8,10 @@ set(CMAKE_CXX_STANDARD 20)
 #        "src/page/*.cpp"
 #        "src/page_allocator/*.cpp")
 set(SOURCES "src/file_store/file_store.cpp"
-        "src/file_store/index_file_store.cpp")
+        "src/file_store/data_file_store.cpp"
+        "src/file_store/index_file_store.cpp"
+        "src/page/index_file_page_header.cpp"
+        "src/page/free_space_map_file_header.cpp")
 
 add_library(MisakiDB ${SOURCES})
 include_directories("src/include")

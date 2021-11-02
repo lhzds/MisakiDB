@@ -5,10 +5,10 @@
 namespace MisakiDB {
 class FreeSpaceMapFileHeader {
 private:
-  uint64_t m_freeSpaceMapFilePageNum = 0;
+  uint64_t m_nextPageID = 0;
 public:
-  uint64_t getFreeSpaceMapFilePageNum() const;
-  void setFreeSpaceMapFilePageNum(uint64_t freeSpaceMapFilePageNum);
+  uint64_t getNextPageID() const;
+  void setNextPageID(uint64_t nextPageID);
 };
 }
 
