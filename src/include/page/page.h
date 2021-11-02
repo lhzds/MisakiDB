@@ -5,6 +5,7 @@ namespace MisakiDB {
 class Page {
 public:
   Page();
+private:
 };
 }
 

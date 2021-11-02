@@ -1,4 +1,8 @@
 *.user
 
+/main.cpp
+/test/main.cpp
+/CMakeLists.txt
+
 /.idea/
 /cmake-build-debug/
