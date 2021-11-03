@@ -6,6 +6,7 @@ using KeyType = std::string;
 using ValueType = std::string;
 using RecordIDType = uint64_t;
 using ByteType = char;
+using FileSizeType = uint64_t;
 using PageIDType = uint64_t;
 using FrameIDType = uint32_t;
 
