@@ -17,5 +17,5 @@ constexpr size_t PAGE_SIZE { 4096 };
 
 constexpr uint16_t SERVER_PORT { 8888 };
 
-enum class FILE_TYPE {INDEX, DATA, FREE_SPACE_MAP};
+enum class FILE_TYPE {INVALID, INDEX, DATA, FREE_SPACE_MAP};
 }

@@ -7,20 +7,20 @@ void IndexFileHeader::init() {
   m_freePageListHeader = INVALID_PAGE_ID;
 }
 
-PageIDType IndexFileHeader::getNextPageId() const {
+PageIDType IndexFileHeader::getNextPageID() const {
   return m_nextPageID;
 }
 
-void IndexFileHeader::setNextPageId(PageIDType nextPageId) {
-  m_nextPageID = nextPageId;
+void IndexFileHeader::incNextPageID() {
+  m_nextPageID += 1;
 }
 
-PageIDType IndexFileHeader::getRootPageId() const {
+PageIDType IndexFileHeader::getRootPageID() const {
   return m_rootPageID;
 }
 
-void IndexFileHeader::setRootPageId(PageIDType rootPageId) {
-  m_rootPageID = rootPageId;
+void IndexFileHeader::setRootPageID(PageIDType rootPageID) {
+  m_rootPageID = rootPageID;
 }
 
 PageIDType IndexFileHeader::getFreePageListHeader() const {

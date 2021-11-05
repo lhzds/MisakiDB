@@ -12,11 +12,11 @@ private:
 public:
   void init();
   
-  PageIDType getRootPageId() const;
-  void setRootPageId(PageIDType rootPageId);
+  PageIDType getRootPageID() const;
+  void setRootPageID(PageIDType rootPageId);
   PageIDType getFreePageListHeader() const;
   void setFreePageListHeader(PageIDType freePageListHeader);
-  PageIDType getNextPageId() const;
-  void setNextPageId(PageIDType nextPageId);
+  PageIDType getNextPageID() const;
+  void incNextPageID();
 };
 }

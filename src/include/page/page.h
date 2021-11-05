@@ -21,8 +21,11 @@ public:
   /** @return the actual data contained within this page */
   inline char *getData() { return m_data; }
   
+  /** @return the file type of this page */
+  inline FILE_TYPE getFileType() const { return m_fileType; }
+  
   /** @return the page id of this page */
-  inline PageIDType getPageId() const { return m_pageID; }
+  inline PageIDType getPageID() const { return m_pageID; }
   
   /** @return the pin count of this page */
   inline int getPinCount() const { return m_pinCount; }
@@ -38,7 +41,7 @@ private:
   inline void resetMemory() { memset(m_data, OFFSET_PAGE_START, PAGE_SIZE); }
   
   /** The type of file which this page belongs. */
-  FILE_TYPE m_fileType = ;
+  FILE_TYPE m_fileType = FILE_TYPE::INVALID;
   /** The actual data that is stored within a page. */
   char m_data[PAGE_SIZE]{};
   /** The ID of this page. */

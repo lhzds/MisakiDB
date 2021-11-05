@@ -12,6 +12,7 @@ set(SOURCES "src/file_store/file_store.cpp"
         "src/page/free_space_map_file_header.cpp"
         "src/page/data_file_page_header.cpp"
         "src/buffer/lru_replacer.cpp"
+        "src/buffer/buffer_pool_manager.cpp"
         )
 
 add_library(MisakiDB ${SOURCES})

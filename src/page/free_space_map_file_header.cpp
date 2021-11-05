@@ -8,8 +8,8 @@ void FreeSpaceMapFileHeader::init() {
 PageIDType FreeSpaceMapFileHeader::getNextPageID() const {
   return m_nextPageID;
 }
-void FreeSpaceMapFileHeader::setNextPageID(PageIDType nextPageID) {
-  m_nextPageID = nextPageID;
+void FreeSpaceMapFileHeader::incNextPageID() {
+  m_nextPageID += 1;
 }
 }
 

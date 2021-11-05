@@ -8,7 +8,7 @@ void DataFileHeader::init() {
 PageIDType DataFileHeader::getNextPageID() const {
   return m_nextPageID;
 }
-void DataFileHeader::setNextPageID(PageIDType nextPageID) {
-  m_nextPageID = nextPageID;
+void DataFileHeader::incNextPageID() {
+  m_nextPageID += 1;
 }
 }

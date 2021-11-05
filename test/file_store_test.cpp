@@ -16,8 +16,8 @@ TEST(FileStoreTest, FileStoreTest1) {
   char rawHeader[PAGE_SIZE];
   fileStore->readRawPage(FILE_TYPE::INDEX, 0, rawHeader);
   auto *indexFileHeader = reinterpret_cast<IndexFileHeader *>(rawHeader);
-  EXPECT_EQ(indexFileHeader->getNextPageId(), 1);
-  EXPECT_EQ(indexFileHeader->getRootPageId(), INVALID_PAGE_ID);
+  EXPECT_EQ(indexFileHeader->getNextPageID(), 1);
+  EXPECT_EQ(indexFileHeader->getRootPageID(), INVALID_PAGE_ID);
   EXPECT_EQ(indexFileHeader->getFreePageListHeader(), INVALID_PAGE_ID);
 
   fileStore->readRawPage(FILE_TYPE::FREE_SPACE_MAP, 0, rawHeader);
@@ -47,8 +47,8 @@ TEST(FileStoreTest, FileStoreTest1) {
   fileStore = new FileStore{"test_db"};
   fileStore->readRawPage(FILE_TYPE::INDEX, 0, rawHeader);
   indexFileHeader = reinterpret_cast<IndexFileHeader *>(rawHeader);
-  EXPECT_EQ(indexFileHeader->getNextPageId(), 1);
-  EXPECT_EQ(indexFileHeader->getRootPageId(), INVALID_PAGE_ID);
+  EXPECT_EQ(indexFileHeader->getNextPageID(), 1);
+  EXPECT_EQ(indexFileHeader->getRootPageID(), INVALID_PAGE_ID);
   EXPECT_EQ(indexFileHeader->getFreePageListHeader(), INVALID_PAGE_ID);
 
   fileStore->readRawPage(FILE_TYPE::INDEX, 1, rawPage2);

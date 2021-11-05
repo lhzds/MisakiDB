@@ -9,6 +9,6 @@ public:
   void init();
   
   PageIDType getNextPageID() const;
-  void setNextPageID(PageIDType nextPageID);
+  void incNextPageID();
 };
 }
