@@ -3,9 +3,9 @@
 #include "options.h"
 #include "b_plus_tree.h"
 #include "data_accessor.h"
-#include "buffer/buffer_pool_manager.h"
-#include "file_store/index_file_store.h"
-#include "file_store/data_file_store.h"
+#include "file_store/file_store.h"
+#include "buffer/index_buffer_pool_manager.h"
+#include "buffer/data_buffer_pool_manager.h"
 
 namespace MisakiDB {
 class DataBase
@@ -37,11 +37,11 @@ private:
   std::atomic_uint64_t m_inuse { 0 };
   std::string m_databaseName;
 
+  FileStore m_fileStore;
+  IndexBufferPoolManager m_indexBufferPoolManager;
+  DataBufferPoolManager m_dataBufferPoolManager;
   BPlusTree m_bPlusTree;
   DataAccessor m_dataAccessor;
-  BufferPoolManager m_indexBufferPoolManager, m_dataBufferPoolManager;
-  IndexFileStore m_indexFileManager;
-  DataFileStore m_dataFileManager;
 
   std::shared_mutex m_readWriteLock;
 };

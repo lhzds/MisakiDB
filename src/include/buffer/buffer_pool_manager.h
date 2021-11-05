@@ -20,7 +20,7 @@ public:
   /**
    * Destroys an existing BufferPoolManager.
    */
-  ~BufferPoolManager();
+  virtual ~BufferPoolManager();
   
   /** @return pointer to all the pages in the buffer pool */
   Page *getPages() { return m_pages; }
@@ -28,19 +28,13 @@ public:
   /** @return size of the buffer pool */
   size_t getPoolSize() const { return m_poolSize; }
   
-  Page *fetchExistentPage(FILE_TYPE fileType, PageIDType pageID);
-  
-  Page *getVictimPage();
-  
-  bool flushPageHelper(FILE_TYPE fileType, PageIDType pageID);
-  
   /**
    * Fetch the requested page from the buffer pool.
    * @param fileType type of file wich page belongs
    * @param pageID id of page to be fetched
    * @return the requested page
    */
-  Page *fetchPage(FILE_TYPE fileType, PageIDType pageID);
+  virtual Page *fetchPage(FILE_TYPE fileType, PageIDType pageID, bool enableCondVar = false);
   
   /**
    * Unpin the target page from the buffer pool.
@@ -49,7 +43,7 @@ public:
    * @param isDirty true if the page should be marked as dirty, false otherwise
    * @return false if the page pin count is <= 0 before this call, true otherwise
    */
-  bool unpinPage(FILE_TYPE fileType, PageIDType pageID, bool isDirty);
+  virtual bool unpinPage(FILE_TYPE fileType, PageIDType pageID, bool isDirty, bool enableCondVar = false);
   
   /**
    * Flushes the target page to disk.
@@ -65,12 +59,19 @@ public:
    * @param pageID id of new page to be appended.
    * @return nullptr if no new pages could be appended to file, otherwise pointer to new page
    */
-  Page *appendNewPage(FILE_TYPE fileType, PageIDType pageID);
+  virtual Page *appendNewPage(FILE_TYPE fileType, PageIDType pageID, bool enableCondVar = false);
   
   /**
    * Flushes all the pages in the buffer pool to disk.
    */
   void flushAllPages();
+
+private:
+  Page *fetchExistentPage(FILE_TYPE fileType, PageIDType pageID);
+
+  Page *getVictimPage();
+
+  bool flushPageHelper(FILE_TYPE fileType, PageIDType pageID);
 
 protected:
   /** Number of pages in the buffer pool. */
@@ -87,5 +88,7 @@ protected:
   std::list<FrameIDType> m_freeList;
   /** This latch protects shared data structures. */
   std::mutex m_poolLatch;
+  /** This condition variable is used to ensure that the page is successfully fetched. */
+  std::condition_variable m_poolCondition;
 };
 }

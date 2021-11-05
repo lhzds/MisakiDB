@@ -1,11 +1,12 @@
-#ifndef OPTION_H
-#define OPTION_H
+#pragma once
+#include "globals.h"
 
 namespace MisakiDB {
-    class Options {
-    public:
-        Options();
-    };
+class Options final {
+public:
+  Options();
+  size_t getIndexBufferPoolSize() const;
+  size_t getDataBufferPoolSize() const;
+};
 }
 
-#endif // OPTION_H

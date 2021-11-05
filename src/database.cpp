@@ -2,7 +2,11 @@
 
 namespace MisakiDB{
 DataBase::DataBase(const std::string &databaseName, const Options &options)
-    :m_databaseName { databaseName } { }
+    :m_databaseName { databaseName },
+      m_fileStore { databaseName },
+      m_indexBufferPoolManager { options.getIndexBufferPoolSize(), &m_fileStore },
+      m_dataBufferPoolManager { options.getDataBufferPoolSize(), &m_fileStore },
+      m_bPlusTree { &m_indexBufferPoolManager } { }
 
 bool DataBase::get(const KeyType &key, ValueType &value) {
   std::shared_lock<std::shared_mutex> lock { this->m_readWriteLock };

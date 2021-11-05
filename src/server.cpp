@@ -84,18 +84,20 @@ void Server::serve_helper(SOCKET clientSocket) {
   std::_List_iterator<DataBase> database;
 
   while (true) {
-    // Receive message until "END" received
-    std::string message;
+    // Message buffer
     char buffer[4096] { 0 };
-    while (recv(clientSocket, buffer, sizeof (buffer) - 1, 0)) {
-      // Once "END" received, one operation is completely received
-      if (not strcmp(buffer, "END")) break;
+    // Get message total length
+    recv(clientSocket, buffer, sizeof (buffer) - 1, 0);
+    int64_t length { atoll(buffer) };
+    memset(buffer, 0, sizeof(buffer));
 
-      // Otherwise we continue receiving the data and append it to message
+    // Receive message until length equals or belows zero
+    std::string message;
+    while ((length -= recv(clientSocket, buffer, sizeof (buffer) - 1, 0)) > 0) {
+      // Receive the data and append it to message
       message += buffer;
       memset(buffer, 0, sizeof(buffer));
     }
-
 
     // Find the first space
     uint64_t index { 0 };
