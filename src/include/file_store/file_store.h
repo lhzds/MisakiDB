@@ -1,5 +1,6 @@
 #pragma once
 #include "globals.h"
+#include "page/data_file_page_header.h"
 #include "page/index_file_page_header.h"
 #include "page/free_space_map_file_header.h"
 

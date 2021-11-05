@@ -38,7 +38,7 @@ private:
   inline void resetMemory() { memset(m_data, OFFSET_PAGE_START, PAGE_SIZE); }
   
   /** The type of file which this page belongs. */
-  FILE_TYPE m_fileType;
+  FILE_TYPE m_fileType = ;
   /** The actual data that is stored within a page. */
   char m_data[PAGE_SIZE]{};
   /** The ID of this page. */

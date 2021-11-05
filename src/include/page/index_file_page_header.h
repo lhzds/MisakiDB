@@ -10,6 +10,8 @@ private:
   PageIDType m_freePageListHeader = INVALID_PAGE_ID;
   
 public:
+  void init();
+  
   PageIDType getRootPageId() const;
   void setRootPageId(PageIDType rootPageId);
   PageIDType getFreePageListHeader() const;

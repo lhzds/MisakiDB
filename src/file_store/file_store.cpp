@@ -115,14 +115,20 @@ void FileStore::createFile(const std::string &fileName) {
 void FileStore::initFileStruct() {
   // init index file header
   ByteType raw1[PAGE_SIZE]{};
-  IndexFileHeader initIndexFileHeader;
-  memcpy(raw1, &initIndexFileHeader, sizeof(IndexFileHeader));
+  auto initIndexFileHeader = reinterpret_cast<IndexFileHeader *>(raw1);
+  initIndexFileHeader->init();
   writeRawPage_Helper(m_indexFileIO, 0, raw1, "index file");
   
   // init free-space map file header
   ByteType raw2[PAGE_SIZE]{};
-  FreeSpaceMapFileHeader initFreeSpaceMapFileHeader;
-  memcpy(raw2, &initFreeSpaceMapFileHeader, sizeof(FreeSpaceMapFileHeader));
+  auto initFreeSpaceMapFileHeader = reinterpret_cast<FreeSpaceMapFileHeader *>(raw2);
+  initFreeSpaceMapFileHeader->init();
   writeRawPage_Helper(m_freeSpaceMapFileIO, 0, raw2, "free-space map file");
+  
+  // init data file header
+  ByteType raw3[PAGE_SIZE]{};
+  auto initDataFileHeader = reinterpret_cast<DataFileHeader *>(raw3);
+  initDataFileHeader->init();
+  writeRawPage_Helper(m_dataFileIO, 0, raw3, "data file");
 }
 }

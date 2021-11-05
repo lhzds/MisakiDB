@@ -23,6 +23,10 @@ TEST(FileStoreTest, FileStoreTest1) {
   fileStore->readRawPage(FILE_TYPE::FREE_SPACE_MAP, 0, rawHeader);
   auto *fsMapFileHeader = reinterpret_cast<FreeSpaceMapFileHeader *>(rawHeader);
   EXPECT_EQ(fsMapFileHeader->getNextPageID(), 1);
+  
+  fileStore->readRawPage(FILE_TYPE::DATA, 0, rawHeader);
+  auto *dataFileHeader = reinterpret_cast<DataFileHeader *>(rawHeader);
+  EXPECT_EQ(dataFileHeader->getNextPageID(), 1);
 
   // test read and write
   char rawPage1[PAGE_SIZE];

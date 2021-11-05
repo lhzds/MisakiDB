@@ -1,9 +1,8 @@
 #pragma once
-
 #include "globals.h"
 
 namespace MisakiDB {
-class FreeSpaceMapFileHeader {
+class DataFileHeader {
 private:
   PageIDType m_nextPageID = 1;
 public:
@@ -13,5 +12,3 @@ public:
   void setNextPageID(PageIDType nextPageID);
 };
 }
-
-
