@@ -2,6 +2,7 @@
 #include "globals.h"
 #include "options.h"
 #include "database.h"
+#include "thread_pool.h"
 #include "winsock2.h"
 #include <list>
 
@@ -23,5 +24,7 @@ private:
 
   std::mutex m_databasesMutex;
   std::list<DataBase> m_databases;
+
+  ThreadPool m_threadPool;
 };
 }

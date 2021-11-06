@@ -1,7 +1,7 @@
 #include "server.h"
 
 namespace MisakiDB{
-Server::Server() {
+Server::Server() : m_threadPool { 1000 } {
   // Initialize DLL
   WSADATA wsdata;
   if (0 != WSAStartup(MAKEWORD(2, 2), &wsdata)) throw "WSAStartup Error";
@@ -33,7 +33,7 @@ Server::~Server() {
 
 auto Server::open(const std::string &databaseName, const Options &options) {
   // Lock
-  this->m_databasesMutex.lock();
+  std::unique_lock<std::mutex> lock { this->m_databasesMutex };
 
   // Check if the database is already opened
   auto database { std::find_if(begin(this->m_databases), end(this->m_databases),
@@ -49,24 +49,18 @@ auto Server::open(const std::string &databaseName, const Options &options) {
   // Increase the inuse count
   database->use();
 
-  // Unlock
-  this->m_databasesMutex.unlock();
-
   return database;
 }
 
 void Server::close(std::_List_iterator<DataBase> &database) {
   // Lock
-  this->m_databasesMutex.lock();
+  std::unique_lock<std::mutex> lock { this->m_databasesMutex };
 
   // Decrease the inuse count
   database->unuse();
 
   // If this is the last user that closes the database, then remove it
   if (not database->inuse()) this->m_databases.erase(database);
-
-  // Unlock
-  this->m_databasesMutex.unlock();
 }
 
 void Server::start() {
@@ -76,7 +70,7 @@ void Server::start() {
     if (INVALID_SOCKET == clientSocket) throw "Accept Error";
 
     // Start serving
-    std::thread { &Server::serve_helper, this, clientSocket }.detach();
+    this->m_threadPool.submit(&Server::serve_helper, this, clientSocket);
   }
 }
 

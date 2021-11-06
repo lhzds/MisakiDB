@@ -42,7 +42,5 @@ private:
   DataBufferPoolManager m_dataBufferPoolManager;
   BPlusTree m_bPlusTree;
   DataAccessor m_dataAccessor;
-
-  std::shared_mutex m_readWriteLock;
 };
 }
