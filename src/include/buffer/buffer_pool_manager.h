@@ -14,8 +14,9 @@ public:
    * Creates a new BufferPoolManager.
    * @param poolSize the size of the buffer pool
    * @param fileStore the disk manager
+   * @param enableCondVar indicates whether conditional variables are enabled
    */
-  BufferPoolManager(size_t poolSize, FileStore *fileStore);
+  BufferPoolManager(size_t poolSize, FileStore *fileStore, bool enableCondVar = false);
   
   /**
    * Destroys an existing BufferPoolManager.
@@ -34,7 +35,7 @@ public:
    * @param pageID id of page to be fetched
    * @return the requested page
    */
-  virtual Page *fetchPage(FILE_TYPE fileType, PageIDType pageID, bool enableCondVar = false);
+  virtual Page *fetchPage(FILE_TYPE fileType, PageIDType pageID);
   
   /**
    * Unpin the target page from the buffer pool.
@@ -43,7 +44,7 @@ public:
    * @param isDirty true if the page should be marked as dirty, false otherwise
    * @return false if the page pin count is <= 0 before this call, true otherwise
    */
-  virtual bool unpinPage(FILE_TYPE fileType, PageIDType pageID, bool isDirty, bool enableCondVar = false);
+  virtual bool unpinPage(FILE_TYPE fileType, PageIDType pageID, bool isDirty);
   
   /**
    * Flushes the target page to disk.
@@ -59,7 +60,7 @@ public:
    * @param pageID id of new page to be appended.
    * @return nullptr if no new pages could be appended to file, otherwise pointer to new page
    */
-  virtual Page *appendNewPage(FILE_TYPE fileType, PageIDType pageID, bool enableCondVar = false);
+  virtual Page *appendNewPage(FILE_TYPE fileType, PageIDType pageID);
   
   /**
    * Flushes all the pages in the buffer pool to disk.
@@ -90,5 +91,7 @@ protected:
   std::mutex m_poolLatch;
   /** This condition variable is used to ensure that the page is successfully fetched. */
   std::condition_variable m_poolCondition;
+  /** Bool value indicating whether conditional variables are enabled **/
+  bool m_enableCondVar;
 };
 }

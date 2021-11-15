@@ -1,8 +1,8 @@
 #include "buffer/buffer_pool_manager.h"
 
 namespace MisakiDB{
-BufferPoolManager::BufferPoolManager(size_t poolSize, FileStore *fileStore)
-    : m_poolSize(poolSize), m_fileStore(fileStore) {
+BufferPoolManager::BufferPoolManager(size_t poolSize, FileStore *fileStore, bool enableCondVar)
+    : m_poolSize(poolSize), m_fileStore(fileStore), m_enableCondVar(enableCondVar) {
   // We allocate a consecutive memory space for the buffer pool.
   m_pages = new Page[m_poolSize];
   m_replacer = new LRUReplacer;
@@ -82,7 +82,7 @@ bool BufferPoolManager::flushPageHelper(FILE_TYPE fileType, PageIDType pageID) {
   return true;
 }
 
-Page *BufferPoolManager::fetchPage(FILE_TYPE fileType, PageIDType pageID, bool enableCondVar) {
+Page *BufferPoolManager::fetchPage(FILE_TYPE fileType, PageIDType pageID) {
   // 1.     Search the page table for the requested page (P).
   // 1.1    If P exists, pin it and return it immediately.
   // 1.2    If P does not exist, find a replacement page (R) from either the free list or the replacer.
@@ -101,7 +101,7 @@ Page *BufferPoolManager::fetchPage(FILE_TYPE fileType, PageIDType pageID, bool e
     return p;
   }
 
-  if (enableCondVar) {
+  if (m_enableCondVar) {
     this->m_poolCondition.wait(lck, [&] { return (p = getVictimPage()) != nullptr; });
   } else {
     p = getVictimPage();
@@ -119,7 +119,7 @@ Page *BufferPoolManager::fetchPage(FILE_TYPE fileType, PageIDType pageID, bool e
   return nullptr;
 }
 
-bool BufferPoolManager::unpinPage(FILE_TYPE fileType, PageIDType pageID, bool isDirty, bool enableCondVar) {
+bool BufferPoolManager::unpinPage(FILE_TYPE fileType, PageIDType pageID, bool isDirty) {
   std::lock_guard<std::mutex> lck(m_poolLatch);
   Page *p = fetchExistentPage(fileType, pageID);
   
@@ -138,7 +138,7 @@ bool BufferPoolManager::unpinPage(FILE_TYPE fileType, PageIDType pageID, bool is
   
   if (--p->m_pinCount == 0) {
     m_replacer->unpin(p - m_pages);
-    if (enableCondVar) {
+    if (m_enableCondVar) {
       this->m_poolCondition.notify_one();
     }
   }
@@ -161,7 +161,7 @@ void BufferPoolManager::flushAllPages() {
   }
 }
 
-Page *BufferPoolManager::appendNewPage(FILE_TYPE fileType, PageIDType pageID, bool enableCondVar) {
+Page *BufferPoolManager::appendNewPage(FILE_TYPE fileType, PageIDType pageID) {
   // 1.   If all the pages in the buffer pool are pinned, return nullptr.
   // 2.   Pick a victim page P from either the free list or the replacer. Always pick from the free list first.
   // 3.   Update P's metadata, zero out memory and add P to the page table.
@@ -169,7 +169,7 @@ Page *BufferPoolManager::appendNewPage(FILE_TYPE fileType, PageIDType pageID, bo
   std::unique_lock<std::mutex> lck(m_poolLatch);
   Page *p {  };
 
-  if (enableCondVar) {
+  if (m_enableCondVar) {
     this->m_poolCondition.wait(lck, [&] { return (p = getVictimPage()) != nullptr; });
   } else {
     p = getVictimPage();

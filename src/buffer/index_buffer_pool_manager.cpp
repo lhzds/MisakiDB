@@ -3,14 +3,14 @@
 namespace MisakiDB {
 
 IndexBufferPoolManager::IndexBufferPoolManager(size_t poolSize, FileStore *fileStore)
-    : BufferPoolManager { poolSize, fileStore } { }
+    : BufferPoolManager { poolSize, fileStore, true } { }
 
 Page *IndexBufferPoolManager::fetchIndexPage(PageIDType pageID) {
-  return BufferPoolManager::fetchPage(FILE_TYPE::INDEX, pageID, true);
+  return BufferPoolManager::fetchPage(FILE_TYPE::INDEX, pageID);
 }
 
 bool IndexBufferPoolManager::unpinIndexPage(PageIDType pageID, bool isDirty) {
-  return BufferPoolManager::unpinPage(FILE_TYPE::INDEX, pageID, isDirty, true);
+  return BufferPoolManager::unpinPage(FILE_TYPE::INDEX, pageID, isDirty);
 }
 
 bool IndexBufferPoolManager::flushIndexPage(PageIDType pageID) {
@@ -18,6 +18,6 @@ bool IndexBufferPoolManager::flushIndexPage(PageIDType pageID) {
 }
 
 Page *IndexBufferPoolManager::appendNewIndexPage(PageIDType pageID) {
-  return BufferPoolManager::appendNewPage(FILE_TYPE::INDEX, pageID, true);
+  return BufferPoolManager::appendNewPage(FILE_TYPE::INDEX, pageID);
 }
 }

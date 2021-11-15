@@ -2,14 +2,14 @@
 
 namespace MisakiDB {
 DataBufferPoolManager::DataBufferPoolManager(size_t poolSize, FileStore *fileStore)
-    : BufferPoolManager { poolSize, fileStore } { }
+    : BufferPoolManager { poolSize, fileStore, true } { }
 
 Page *DataBufferPoolManager::fetchDataPage(PageIDType pageID) {
-  return BufferPoolManager::fetchPage(FILE_TYPE::DATA, pageID, true);
+  return BufferPoolManager::fetchPage(FILE_TYPE::DATA, pageID);
 }
 
 bool DataBufferPoolManager::unpinDataPage(PageIDType pageID, bool isDirty) {
-  return BufferPoolManager::unpinPage(FILE_TYPE::DATA, pageID, isDirty, true);
+  return BufferPoolManager::unpinPage(FILE_TYPE::DATA, pageID, isDirty);
 }
 
 bool DataBufferPoolManager::flushDataPage(PageIDType pageID) {
@@ -17,15 +17,15 @@ bool DataBufferPoolManager::flushDataPage(PageIDType pageID) {
 }
 
 Page *DataBufferPoolManager::appendNewDataPage(PageIDType pageID) {
-  return BufferPoolManager::appendNewPage(FILE_TYPE::DATA, pageID, true);
+  return BufferPoolManager::appendNewPage(FILE_TYPE::DATA, pageID);
 }
 
 Page *DataBufferPoolManager::fetchFreeSpaceMapPage(PageIDType pageID) {
-  return BufferPoolManager::fetchPage(FILE_TYPE::FREE_SPACE_MAP, pageID, true);
+  return BufferPoolManager::fetchPage(FILE_TYPE::FREE_SPACE_MAP, pageID);
 }
 
 bool DataBufferPoolManager::unpinFreeSpaceMapPage(PageIDType pageID, bool isDirty) {
-  return BufferPoolManager::unpinPage(FILE_TYPE::FREE_SPACE_MAP, pageID, isDirty, true);
+  return BufferPoolManager::unpinPage(FILE_TYPE::FREE_SPACE_MAP, pageID, isDirty);
 }
 
 bool DataBufferPoolManager::flushFreeSpaceMapPage(PageIDType pageID) {
@@ -33,6 +33,6 @@ bool DataBufferPoolManager::flushFreeSpaceMapPage(PageIDType pageID) {
 }
 
 Page *DataBufferPoolManager::appendNewFreeSpaceMapPage(PageIDType pageID) {
-  return BufferPoolManager::appendNewPage(FILE_TYPE::FREE_SPACE_MAP, pageID, true);
+  return BufferPoolManager::appendNewPage(FILE_TYPE::FREE_SPACE_MAP, pageID);
 }
 }
