@@ -30,7 +30,7 @@ public:
   
   /**
    * Fetch the requested page from the buffer pool.
-   * @param fileType type of file wich page belongs
+   * @param fileType type of file which page belongs
    * @param pageID id of page to be fetched
    * @return the requested page
    */
@@ -38,7 +38,7 @@ public:
   
   /**
    * Unpin the target page from the buffer pool.
-   * @param fileType type of file wich page belongs
+   * @param fileType type of file which page belongs
    * @param pageID id of page to be unpinned
    * @param isDirty true if the page should be marked as dirty, false otherwise
    * @return false if the page pin count is <= 0 before this call, true otherwise
@@ -47,7 +47,7 @@ public:
   
   /**
    * Flushes the target page to disk.
-   * @param fileType type of file wich page belongs, cannot be FILE_TYPE::INVALID
+   * @param fileType type of file which page belongs, cannot be FILE_TYPE::INVALID
    * @param pageID id of page to be flushed, cannot be INVALID_PAGE_ID
    * @return false if the page could not be found in the page table, true otherwise
    */

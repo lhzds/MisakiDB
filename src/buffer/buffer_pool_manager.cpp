@@ -48,7 +48,7 @@ Page *BufferPoolManager::getVictimPage() {
     return p;
   }
   
-  if (m_replacer->victim(&frameID)) { // if no free frames, try to evist a page
+  if (m_replacer->victim(&frameID)) { // if no free frames, try to evict a page
     p = m_pages + frameID;
     m_pageTable.erase({p->m_fileType, p->m_pageID});
     
@@ -109,7 +109,7 @@ Page *BufferPoolManager::fetchPage(FILE_TYPE fileType, PageIDType pageID, bool e
 
   if (p != nullptr) {
     ++p->m_pinCount;
-    m_pageTable[{fileType, pageID}] = (p - m_pages);  // add a entry to page table(p - m_pages is to get the frame id)
+    m_pageTable[{fileType, pageID}] = (p - m_pages);  // add an entry to page table(p - m_pages is to get the frame id)
     p->m_fileType = fileType;
     p->m_pageID = pageID;
     m_fileStore->readRawPage(p->m_fileType, p->m_pageID, p->m_data);
@@ -177,7 +177,7 @@ Page *BufferPoolManager::appendNewPage(FILE_TYPE fileType, PageIDType pageID, bo
 
   if (p != nullptr) {
     ++p->m_pinCount;
-    m_pageTable[{fileType, pageID}] = (p - m_pages);  // add a entry to page table(p - m_pages is to get the frame id)
+    m_pageTable[{fileType, pageID}] = (p - m_pages);  // add an entry to page table(p - m_pages is to get the frame id)
     p->m_fileType = fileType;
     p->m_pageID = pageID;
     p->resetMemory();
