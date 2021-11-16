@@ -12,8 +12,8 @@ public:
   bool unpinIndexPage(PageIDType pageID, bool isDirty);
   bool flushIndexPage(PageIDType pageID);
   
-  Page *newPage(PageIDType *pageID);
-  bool deletePage(PageIDType pageID);
+  Page *newIndexPage();
+  bool deleteIndexPage(PageIDType pageID);
   
 private:
   IndexBufferPoolManager *m_indexBufferPoolManager;

@@ -18,7 +18,7 @@ bool IndexFileManager::flushIndexPage(PageIDType pageID) {
   return m_indexBufferPoolManager->flushIndexPage(pageID);
 }
 
-Page *IndexFileManager::newPage(PageIDType *pageID) {
+Page *IndexFileManager::newIndexPage() {
   std::lock_guard<std::mutex> lck {m_fileLatch};
   
   auto header = reinterpret_cast<IndexFileHeader *>(m_indexBufferPoolManager->fetchIndexPage(0)->getData());
@@ -35,16 +35,13 @@ Page *IndexFileManager::newPage(PageIDType *pageID) {
   }
   
   m_indexBufferPoolManager->unpinIndexPage(0, true);
-  if (pageID != nullptr) {
-    *pageID = newPage->getPageID();
-  }
   return newPage;
 }
 
-bool IndexFileManager::deletePage(PageIDType pageID) {
+bool IndexFileManager::deleteIndexPage(PageIDType pageID) {
   std::lock_guard<std::mutex> lck {m_fileLatch};
   auto header = reinterpret_cast<IndexFileHeader *>(m_indexBufferPoolManager->fetchIndexPage(0)->getData());
-  if (pageID == INVALID_PAGE_ID || pageID < 1 || header->getNextPageID() <= pageID) { // invalid page id
+  if (pageID == INVALID_PAGE_ID || pageID < 1 || header->getNextPageID() <= pageID) { // invalid page id(Header page can't be deleted)
     return false;
   }
   

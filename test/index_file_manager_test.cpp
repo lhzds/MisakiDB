@@ -17,24 +17,24 @@ TEST(IndexFileManagerTest, IndexFileManagerTest1) {
   Page *page = nullptr;
   
   for (int i = 1; i <= 2 * poolSize; ++i) {
-    page = ifm->newPage(nullptr);
+    page = ifm->newIndexPage();
     ASSERT_EQ(i, page->getPageID());
     ASSERT_FALSE(reinterpret_cast<IndexFileFreePage *>(page->getData())->isFreePage());
     ASSERT_TRUE(ifm->unpinIndexPage(page->getPageID(), false));
   }
   
   for (int i = 1; i <= poolSize; ++i) {
-    ASSERT_TRUE(ifm->deletePage(i * 2 - 1));
+    ASSERT_TRUE(ifm->deleteIndexPage(i * 2 - 1));
   }
   
   for (int i = poolSize; i >= 1; --i) {
-    page = ifm->newPage(nullptr);
+    page = ifm->newIndexPage();
     ASSERT_EQ(i * 2 - 1, page->getPageID());
     ASSERT_FALSE(reinterpret_cast<IndexFileFreePage *>(page->getData())->isFreePage());
     ASSERT_TRUE(ifm->unpinIndexPage(page->getPageID(), false));
   }
   
-  page = ifm->newPage(nullptr);
+  page = ifm->newIndexPage();
   ASSERT_EQ(2 * poolSize + 1, page->getPageID());
   ASSERT_FALSE(reinterpret_cast<IndexFileFreePage *>(page->getData())->isFreePage());
   ASSERT_TRUE(ifm->unpinIndexPage(page->getPageID(), false));

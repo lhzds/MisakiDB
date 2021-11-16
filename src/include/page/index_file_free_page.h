@@ -3,7 +3,7 @@
 namespace MisakiDB {
 class IndexFileFreePage {
 private:
-  static const uint32_t MAGIC_NUM = 18827755;
+  static constexpr uint32_t MAGIC_NUM = 18827755;
   
   uint32_t m_magic;
   PageIDType m_nextFreePageID;
