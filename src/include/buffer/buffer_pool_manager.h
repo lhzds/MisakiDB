@@ -35,7 +35,7 @@ public:
    * @param pageID id of page to be fetched
    * @return the requested page
    */
-  virtual Page *fetchPage(FILE_TYPE fileType, PageIDType pageID);
+  virtual Page *fetchPage(FileType fileType, PageIDType pageID);
   
   /**
    * Unpin the target page from the buffer pool.
@@ -44,7 +44,7 @@ public:
    * @param isDirty true if the page should be marked as dirty, false otherwise
    * @return false if the page pin count is <= 0 before this call, true otherwise
    */
-  virtual bool unpinPage(FILE_TYPE fileType, PageIDType pageID, bool isDirty);
+  virtual bool unpinPage(FileType fileType, PageIDType pageID, bool isDirty);
   
   /**
    * Flushes the target page to disk.
@@ -52,7 +52,7 @@ public:
    * @param pageID id of page to be flushed, cannot be INVALID_PAGE_ID
    * @return false if the page could not be found in the page table, true otherwise
    */
-  bool flushPage(FILE_TYPE fileType, PageIDType pageID);
+  bool flushPage(FileType fileType, PageIDType pageID);
   
   /**
    * Appends a new page to the file and fetch it.
@@ -60,7 +60,7 @@ public:
    * @param pageID id of new page to be appended.
    * @return nullptr if no new pages could be appended to file, otherwise pointer to new page
    */
-  virtual Page *appendNewPage(FILE_TYPE fileType, PageIDType pageID);
+  virtual Page *appendNewPage(FileType fileType, PageIDType pageID);
   
   /**
    * Flushes all the pages in the buffer pool to disk.
@@ -68,11 +68,11 @@ public:
   void flushAllPages();
 
 private:
-  Page *fetchExistentPage(FILE_TYPE fileType, PageIDType pageID);
+  Page *fetchExistentPage(FileType fileType, PageIDType pageID);
 
   Page *getVictimPage();
 
-  bool flushPageHelper(FILE_TYPE fileType, PageIDType pageID);
+  bool flushPage_helper(FileType fileType, PageIDType pageID);
 
 protected:
   /** Number of pages in the buffer pool. */
@@ -82,7 +82,7 @@ protected:
   /** Pointer to the file store. */
   FileStore *m_fileStore;
   /** Page table for keeping track of buffer pool pages. */
-  std::map<std::pair<FILE_TYPE, PageIDType>, FrameIDType> m_pageTable;
+  std::map<std::pair<FileType, PageIDType>, FrameIDType> m_pageTable;
   /** Replacer to find unpinned pages for replacement. */
   Replacer *m_replacer;
   /** List of free pages. */

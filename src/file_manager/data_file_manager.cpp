@@ -39,12 +39,13 @@ Page *DataFileManager::allocateDataPage(RecordSizeType recordSize) {
     m_dataBufferPoolManager->unpinFreeSpaceMapPage(i, false);
   }
   
-  if (!found) {
+  if (!found) { // if fail to find a fit data page from existing free space map page
+    // create and init new free space map file page
     Page *newMapPage = m_dataBufferPoolManager->appendNewFreeSpaceMapPage(mapHeader->getNextPageID());
     m_dataBufferPoolManager->unpinFreeSpaceMapPage(newMapPage->getPageID(), false);
     auto mapFilePage = reinterpret_cast<FreeSpaceMapFilePage *>(newMapPage->getData());
     mapFilePage->init();
-    
+
     dataPageID = convertToDataPageID(mapHeader->getNextPageID(), 0);
     mapHeader->incNextPageID();
     m_dataBufferPoolManager->unpinFreeSpaceMapPage(0, true);
@@ -55,10 +56,10 @@ Page *DataFileManager::allocateDataPage(RecordSizeType recordSize) {
   Page *newDataPage;
   auto dataFileHeader = reinterpret_cast<DataFileHeader *>
     (m_dataBufferPoolManager->fetchDataPage(0)->getData());
-  if (dataFileHeader->getNextPageID() <= dataPageID) {
+  if (dataFileHeader->getNextPageID() <= dataPageID) { // if the data file page do not yet exist
     dataFileHeader->incNextPageID();
     m_dataBufferPoolManager->unpinDataPage(0, true);
-    
+    // create and init new data file page
     newDataPage = m_dataBufferPoolManager->appendNewDataPage(dataPageID);
     auto dataFilePage = reinterpret_cast<DataFilePage *>(newDataPage->getData());
     dataFilePage->init();

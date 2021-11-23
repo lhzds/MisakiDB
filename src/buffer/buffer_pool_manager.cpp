@@ -18,7 +18,7 @@ BufferPoolManager::~BufferPoolManager() {
   delete m_replacer;
 }
 
-Page *BufferPoolManager::fetchExistentPage(FILE_TYPE fileType, PageIDType pageID) {
+Page *BufferPoolManager::fetchExistentPage(FileType fileType, PageIDType pageID) {
   FrameIDType frameID;
   Page *p;
   
@@ -65,8 +65,8 @@ Page *BufferPoolManager::getVictimPage() {
   return nullptr;
 }
 
-bool BufferPoolManager::flushPageHelper(FILE_TYPE fileType, PageIDType pageID) {
-  assert(fileType != FILE_TYPE::INVALID || pageID != INVALID_PAGE_ID);
+bool BufferPoolManager::flushPage_helper(FileType fileType, PageIDType pageID) {
+  assert(fileType != FileType::INVALID || pageID != INVALID_PAGE_ID);
   
   Page *p = fetchExistentPage(fileType, pageID);
   if (p == nullptr) {
@@ -82,7 +82,7 @@ bool BufferPoolManager::flushPageHelper(FILE_TYPE fileType, PageIDType pageID) {
   return true;
 }
 
-Page *BufferPoolManager::fetchPage(FILE_TYPE fileType, PageIDType pageID) {
+Page *BufferPoolManager::fetchPage(FileType fileType, PageIDType pageID) {
   // 1.     Search the page table for the requested page (P).
   // 1.1    If P exists, pin it and return it immediately.
   // 1.2    If P does not exist, find a replacement page (R) from either the free list or the replacer.
@@ -119,7 +119,7 @@ Page *BufferPoolManager::fetchPage(FILE_TYPE fileType, PageIDType pageID) {
   return nullptr;
 }
 
-bool BufferPoolManager::unpinPage(FILE_TYPE fileType, PageIDType pageID, bool isDirty) {
+bool BufferPoolManager::unpinPage(FileType fileType, PageIDType pageID, bool isDirty) {
   std::lock_guard<std::mutex> lck(m_poolLatch);
   Page *p = fetchExistentPage(fileType, pageID);
   
@@ -146,22 +146,22 @@ bool BufferPoolManager::unpinPage(FILE_TYPE fileType, PageIDType pageID, bool is
   return true;
 }
 
-bool BufferPoolManager::flushPage(FILE_TYPE fileType, PageIDType pageID) {
-  assert(fileType != FILE_TYPE::INVALID || pageID != INVALID_PAGE_ID);
+bool BufferPoolManager::flushPage(FileType fileType, PageIDType pageID) {
+  assert(fileType != FileType::INVALID || pageID != INVALID_PAGE_ID);
   std::lock_guard<std::mutex> lck(m_poolLatch);
-  return flushPageHelper(fileType, pageID);
+  return flushPage_helper(fileType, pageID);
 }
 
 void BufferPoolManager::flushAllPages() {
   std::lock_guard<std::mutex> lck(m_poolLatch);
   for (auto entry : m_pageTable) {
-    FILE_TYPE fileType = entry.first.first;
+    FileType fileType = entry.first.first;
     PageIDType pageID = entry.first.second;
-    flushPageHelper(fileType, pageID);
+    flushPage_helper(fileType, pageID);
   }
 }
 
-Page *BufferPoolManager::appendNewPage(FILE_TYPE fileType, PageIDType pageID) {
+Page *BufferPoolManager::appendNewPage(FileType fileType, PageIDType pageID) {
   // 1.   If all the pages in the buffer pool are pinned, return nullptr.
   // 2.   Pick a victim page P from either the free list or the replacer. Always pick from the free list first.
   // 3.   Update P's metadata, zero out memory and add P to the page table.
@@ -183,7 +183,7 @@ Page *BufferPoolManager::appendNewPage(FILE_TYPE fileType, PageIDType pageID) {
     p->resetMemory();
     
     // make sure new page is written back to disk
-    flushPageHelper(fileType, pageID);
+    flushPage_helper(fileType, pageID);
     return p;
   }
 

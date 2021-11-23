@@ -20,6 +20,9 @@ set(SOURCES "src/file_store/file_store.cpp"
         "src/page/free_space_map_file_page.cpp"
         "src/page/data_file_page.cpp"
         "src/buffer/data_buffer_pool_manager.cpp"
+        "src/page/b_plus_tree_page.cpp"
+        "src/page/b_plus_tree_internal_page.cpp"
+        "src/page/b_plus_tree_leaf_page.cpp"
         )
 
 add_library(MisakiDB ${SOURCES})

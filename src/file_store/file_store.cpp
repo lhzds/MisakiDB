@@ -43,16 +43,16 @@ FileSizeType FileStore::pageIDToOffset(PageIDType pageID) {
   return pageID << 12;
 }
 
-void FileStore::readRawPage(FILE_TYPE fileType, PageIDType pageID, ByteType *raw) {
+void FileStore::readRawPage(FileType fileType, PageIDType pageID, ByteType *raw) {
   switch (fileType) {
-  case FILE_TYPE::INDEX:
-    readRawPage_Helper(m_indexFileIO, pageID, raw, "index file");
+  case FileType::INDEX:
+    readRawPage_helper(m_indexFileIO, pageID, raw, "index file");
     break;
-  case FILE_TYPE::DATA:
-    readRawPage_Helper(m_dataFileIO, pageID, raw, "data file");
+  case FileType::DATA:
+    readRawPage_helper(m_dataFileIO, pageID, raw, "data file");
     break;
-  case FILE_TYPE::FREE_SPACE_MAP:
-    readRawPage_Helper(m_freeSpaceMapFileIO, pageID, raw, "free-space map file");
+  case FileType::FREE_SPACE_MAP:
+    readRawPage_helper(m_freeSpaceMapFileIO, pageID, raw, "free-space map file");
     break;
   default:
     throw std::runtime_error("wrong file type");
@@ -60,16 +60,16 @@ void FileStore::readRawPage(FILE_TYPE fileType, PageIDType pageID, ByteType *raw
   }
 }
 
-void FileStore::writeRawPage(FILE_TYPE fileType, PageIDType pageID, const ByteType *raw) {
+void FileStore::writeRawPage(FileType fileType, PageIDType pageID, const ByteType *raw) {
   switch (fileType) {
-  case FILE_TYPE::INDEX:
-    writeRawPage_Helper(m_indexFileIO, pageID, raw, "index file");
+  case FileType::INDEX:
+    writeRawPage_helper(m_indexFileIO, pageID, raw, "index file");
     break;
-  case FILE_TYPE::DATA:
-    writeRawPage_Helper(m_dataFileIO, pageID, raw, "data file");
+  case FileType::DATA:
+    writeRawPage_helper(m_dataFileIO, pageID, raw, "data file");
     break;
-  case FILE_TYPE::FREE_SPACE_MAP:
-    writeRawPage_Helper(m_freeSpaceMapFileIO, pageID, raw, "free-space map file");
+  case FileType::FREE_SPACE_MAP:
+    writeRawPage_helper(m_freeSpaceMapFileIO, pageID, raw, "free-space map file");
     break;
   default:
     throw std::runtime_error("wrong file type");
@@ -77,7 +77,7 @@ void FileStore::writeRawPage(FILE_TYPE fileType, PageIDType pageID, const ByteTy
   }
 }
 
-void FileStore::readRawPage_Helper(std::fstream &fileIO, PageIDType pageID,
+void FileStore::readRawPage_helper(std::fstream &fileIO, PageIDType pageID,
                                    ByteType *raw, const std::string &fileName) {
   FileSizeType offset = pageIDToOffset(pageID);
   
@@ -94,7 +94,7 @@ void FileStore::readRawPage_Helper(std::fstream &fileIO, PageIDType pageID,
   
 }
 
-void FileStore::writeRawPage_Helper(std::fstream &fileIO, PageIDType pageID,
+void FileStore::writeRawPage_helper(std::fstream &fileIO, PageIDType pageID,
                                     const ByteType *raw, const std::string &fileName) {
   FileSizeType offset = pageIDToOffset(pageID);
   
@@ -117,18 +117,18 @@ void FileStore::initFileStruct() {
   ByteType raw1[PAGE_SIZE]{};
   auto initIndexFileHeader = reinterpret_cast<IndexFileHeader *>(raw1);
   initIndexFileHeader->init();
-  writeRawPage_Helper(m_indexFileIO, 0, raw1, "index file");
+  writeRawPage_helper(m_indexFileIO, 0, raw1, "index file");
   
   // init free-space map file header
   ByteType raw2[PAGE_SIZE]{};
   auto initFreeSpaceMapFileHeader = reinterpret_cast<FreeSpaceMapFileHeader *>(raw2);
   initFreeSpaceMapFileHeader->init();
-  writeRawPage_Helper(m_freeSpaceMapFileIO, 0, raw2, "free-space map file");
+  writeRawPage_helper(m_freeSpaceMapFileIO, 0, raw2, "free-space map file");
   
   // init data file header
   ByteType raw3[PAGE_SIZE]{};
   auto initDataFileHeader = reinterpret_cast<DataFileHeader *>(raw3);
   initDataFileHeader->init();
-  writeRawPage_Helper(m_dataFileIO, 0, raw3, "data file");
+  writeRawPage_helper(m_dataFileIO, 0, raw3, "data file");
 }
 }

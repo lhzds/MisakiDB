@@ -18,7 +18,7 @@ protected:
     delete fileStore;
   }
   
-  void BinaryDataTester(FILE_TYPE fileType) {
+  void BinaryDataTester(FileType fileType) {
     const size_t poolSize {10};
     std::random_device r;
     std::default_random_engine rng(r());
@@ -96,9 +96,9 @@ protected:
 
 // Check whether pages containing terminal characters can be recovered
 TEST_F(BufferPoolManagerTest, BinaryDataTest) {
-  BinaryDataTester(FILE_TYPE::INDEX);
-  BinaryDataTester(FILE_TYPE::DATA);
-  BinaryDataTester(FILE_TYPE::FREE_SPACE_MAP);
+  BinaryDataTester(FileType::INDEX);
+  BinaryDataTester(FileType::DATA);
+  BinaryDataTester(FileType::FREE_SPACE_MAP);
 }
 
 TEST_F(BufferPoolManagerTest, MultiFilesTest) {
@@ -107,37 +107,37 @@ TEST_F(BufferPoolManagerTest, MultiFilesTest) {
   
   Page *page;
   for (int i = 1; i < 10000; ++i) {
-    page = bpm->appendNewPage(FILE_TYPE::INDEX, i);
+    page = bpm->appendNewPage(FileType::INDEX, i);
     EXPECT_NE(nullptr, page);
     memcpy(page->getData(), std::to_string(i).c_str(), std::to_string(i).length() + 1);
-    EXPECT_EQ(true, bpm->unpinPage(FILE_TYPE::INDEX, i, true));
+    EXPECT_EQ(true, bpm->unpinPage(FileType::INDEX, i, true));
   
-    page = bpm->appendNewPage(FILE_TYPE::DATA, i);
+    page = bpm->appendNewPage(FileType::DATA, i);
     EXPECT_NE(nullptr, page);
     memcpy(page->getData(), std::to_string(i).c_str(), std::to_string(i).length() + 1);
-    EXPECT_EQ(true, bpm->unpinPage(FILE_TYPE::DATA, i, true));
+    EXPECT_EQ(true, bpm->unpinPage(FileType::DATA, i, true));
   
-    page = bpm->appendNewPage(FILE_TYPE::FREE_SPACE_MAP, i);
+    page = bpm->appendNewPage(FileType::FREE_SPACE_MAP, i);
     EXPECT_NE(nullptr, page);
     memcpy(page->getData(), std::to_string(i).c_str(), std::to_string(i).length() + 1);
-    EXPECT_EQ(true, bpm->unpinPage(FILE_TYPE::FREE_SPACE_MAP, i, true));
+    EXPECT_EQ(true, bpm->unpinPage(FileType::FREE_SPACE_MAP, i, true));
   }
   
   for (int i = 1; i < 10000; ++i) {
-    page = bpm->fetchPage(FILE_TYPE::INDEX, i);
+    page = bpm->fetchPage(FileType::INDEX, i);
     EXPECT_NE(nullptr, page);
     EXPECT_EQ(0, strcmp(std::to_string(i).c_str(), page->getData()));
-    EXPECT_EQ(true, bpm->unpinPage(FILE_TYPE::INDEX, i, false));
+    EXPECT_EQ(true, bpm->unpinPage(FileType::INDEX, i, false));
   
-    page = bpm->fetchPage(FILE_TYPE::DATA, i);
+    page = bpm->fetchPage(FileType::DATA, i);
     EXPECT_NE(nullptr, page);
     EXPECT_EQ(0, strcmp(std::to_string(i).c_str(), page->getData()));
-    EXPECT_EQ(true, bpm->unpinPage(FILE_TYPE::DATA, i, false));
+    EXPECT_EQ(true, bpm->unpinPage(FileType::DATA, i, false));
   
-    page = bpm->fetchPage(FILE_TYPE::FREE_SPACE_MAP, i);
+    page = bpm->fetchPage(FileType::FREE_SPACE_MAP, i);
     EXPECT_NE(nullptr, page);
     EXPECT_EQ(0, strcmp(std::to_string(i).c_str(), page->getData()));
-    EXPECT_EQ(true, bpm->unpinPage(FILE_TYPE::FREE_SPACE_MAP, i, false));
+    EXPECT_EQ(true, bpm->unpinPage(FileType::FREE_SPACE_MAP, i, false));
   }
 
   delete bpm;

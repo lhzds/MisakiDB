@@ -19,10 +19,10 @@ public:
   ~Page() = default;
   
   /** @return the actual data contained within this page */
-  inline char *getData() { return m_data; }
+  inline ByteType *getData() { return m_data; }
   
   /** @return the file type of this page */
-  inline FILE_TYPE getFileType() const { return m_fileType; }
+  inline FileType getFileType() const { return m_fileType; }
   
   /** @return the page id of this page */
   inline PageIDType getPageID() const { return m_pageID; }
@@ -41,9 +41,9 @@ private:
   inline void resetMemory() { memset(m_data, OFFSET_PAGE_START, PAGE_SIZE); }
   
   /** The type of file which this page belongs. */
-  FILE_TYPE m_fileType = FILE_TYPE::INVALID;
+  FileType m_fileType = FileType::INVALID;
   /** The actual data that is stored within a page. */
-  char m_data[PAGE_SIZE]{};
+  ByteType m_data[PAGE_SIZE]{};
   /** The ID of this page. */
   PageIDType m_pageID = INVALID_PAGE_ID ;
   /** The pin count of this page. */
