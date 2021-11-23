@@ -1,2 +1,2 @@
 # MisakiDB
-A simple naive key-value database.
+A naive key-value database.
