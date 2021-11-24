@@ -22,17 +22,14 @@ TEST(DataFileManagerTest, DataFileManagerTest1) {
   for (int i = 1; i <= 2 * FreeSpaceMapFilePage::MAX_SIZE; ++i) {
     page = dfm->allocateDataPage(DataFilePage::MAX_RECORD_SIZE);
     ASSERT_EQ(i, page->getPageID());
-    dfm->subFreeSpace(page->getPageID(), DataFilePage::MAX_RECORD_SIZE);
     ASSERT_TRUE(dfm->unpinDataPage(page->getPageID(), false));
   }
   // make sure all previous allocated page full
   page = dfm->allocateDataPage(1);
   ASSERT_EQ(2 * FreeSpaceMapFilePage::MAX_SIZE + 1, page->getPageID());
-  dfm->subFreeSpace(page->getPageID(), 1);
   ASSERT_TRUE(dfm->unpinDataPage(page->getPageID(), false));
   page = dfm->allocateDataPage(DataFilePage::MAX_RECORD_SIZE - 1 - DataFilePage::SLOT_SIZE);
   ASSERT_EQ(2 * FreeSpaceMapFilePage::MAX_SIZE + 1, page->getPageID());
-  dfm->subFreeSpace(page->getPageID(), DataFilePage::MAX_RECORD_SIZE - 1);
   ASSERT_TRUE(dfm->unpinDataPage(page->getPageID(), false));
   // decrease free space of all pages whose page id are odd
   for (int i = 1; i <= FreeSpaceMapFilePage::MAX_SIZE; ++i) {
@@ -42,12 +39,10 @@ TEST(DataFileManagerTest, DataFileManagerTest1) {
   for (int i = 1; i <= FreeSpaceMapFilePage::MAX_SIZE / 2; ++i) {
     page = dfm->allocateDataPage(i);
     ASSERT_EQ(i * 2 - 1, page->getPageID());
-    dfm->subFreeSpace(page->getPageID(), i);
     ASSERT_TRUE(dfm->unpinDataPage(page->getPageID(), false));
   
     page = dfm->allocateDataPage(FreeSpaceMapFilePage::MAX_SIZE + 1 - i);
     ASSERT_EQ(FreeSpaceMapFilePage::MAX_SIZE * 2 - (i * 2 - 1), page->getPageID());
-    dfm->subFreeSpace(page->getPageID(), FreeSpaceMapFilePage::MAX_SIZE + 1 - i);
     ASSERT_TRUE(dfm->unpinDataPage(page->getPageID(), false));
   }
   

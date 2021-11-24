@@ -17,6 +17,5 @@ public:
   
 private:
   IndexBufferPoolManager *m_indexBufferPoolManager;
-  std::mutex m_fileLatch;
 };
 }

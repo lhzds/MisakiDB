@@ -20,8 +20,9 @@ bool DataFileManager::flushDataPage(PageIDType pageID) {
 }
 
 Page *DataFileManager::allocateDataPage(RecordSizeType recordSize) {
-  auto mapHeader = reinterpret_cast<FreeSpaceMapFileHeader *>
-      (m_dataBufferPoolManager->fetchFreeSpaceMapPage(0)->getData());
+  Page *rawMapHeader = m_dataBufferPoolManager->fetchFreeSpaceMapPage(0);
+  rawMapHeader->wLatch();
+  auto mapHeader = reinterpret_cast<FreeSpaceMapFileHeader *>(rawMapHeader->getData());
   
   PageIDType dataPageID = INVALID_PAGE_ID;
   bool found = false;
@@ -32,6 +33,8 @@ Page *DataFileManager::allocateDataPage(RecordSizeType recordSize) {
     for (int j = 0; !found && j < FreeSpaceMapFilePage::MAX_SIZE; ++j) {
       if (mapPage->getFreeSpace(j) >= recordSize + DataFilePage::SLOT_SIZE) {
         found = true;
+        mapPage->subFreeSpace(j, recordSize + DataFilePage::SLOT_SIZE);
+        
         dataPageID = convertToDataPageID(i, j);
       }
     }
@@ -41,51 +44,52 @@ Page *DataFileManager::allocateDataPage(RecordSizeType recordSize) {
   
   if (!found) { // if fail to find a fit data page from existing free space map page
     // create and init new free space map file page
-    Page *newMapPage = m_dataBufferPoolManager->appendNewFreeSpaceMapPage(mapHeader->getNextPageID());
-    m_dataBufferPoolManager->unpinFreeSpaceMapPage(newMapPage->getPageID(), false);
-    auto mapFilePage = reinterpret_cast<FreeSpaceMapFilePage *>(newMapPage->getData());
-    mapFilePage->init();
+    Page *rawNewMapPage = m_dataBufferPoolManager->appendNewFreeSpaceMapPage(mapHeader->getNextPageID());
+    m_dataBufferPoolManager->unpinFreeSpaceMapPage(rawNewMapPage->getPageID(), false);
+    auto newMapPage = reinterpret_cast<FreeSpaceMapFilePage *>(rawNewMapPage->getData());
+    newMapPage->init();
+    newMapPage->subFreeSpace(0, recordSize + DataFilePage::SLOT_SIZE);
 
     dataPageID = convertToDataPageID(mapHeader->getNextPageID(), 0);
     mapHeader->incNextPageID();
+    
+    rawMapHeader->wUnlatch();
     m_dataBufferPoolManager->unpinFreeSpaceMapPage(0, true);
   } else {
+    rawMapHeader->wUnlatch();
     m_dataBufferPoolManager->unpinFreeSpaceMapPage(0, false);
   }
   
-  Page *newDataPage;
-  auto dataFileHeader = reinterpret_cast<DataFileHeader *>
-    (m_dataBufferPoolManager->fetchDataPage(0)->getData());
-  if (dataFileHeader->getNextPageID() <= dataPageID) { // if the data file page do not yet exist
-    dataFileHeader->incNextPageID();
-    m_dataBufferPoolManager->unpinDataPage(0, true);
+  Page *rawDataPage;
+  Page *rawDataHeader = m_dataBufferPoolManager->fetchDataPage(0);
+  rawDataHeader->wLatch();
+  auto dataHeader = reinterpret_cast<DataFileHeader *>(rawDataHeader->getData());
+  if (dataHeader->getNextPageID() <= dataPageID) { // if the data file page do not yet exist
     // create and init new data file page
-    newDataPage = m_dataBufferPoolManager->appendNewDataPage(dataPageID);
-    auto dataFilePage = reinterpret_cast<DataFilePage *>(newDataPage->getData());
-    dataFilePage->init();
+    rawDataPage = m_dataBufferPoolManager->appendNewDataPage(dataPageID);
+    auto dataPage = reinterpret_cast<DataFilePage *>(rawDataPage->getData());
+    dataPage->init();
+    
+    dataHeader->incNextPageID();
+    rawDataHeader->wUnlatch();
+    m_dataBufferPoolManager->unpinDataPage(0, true);
   } else {
-    newDataPage = m_dataBufferPoolManager->fetchDataPage(dataPageID);
+    rawDataPage = m_dataBufferPoolManager->fetchDataPage(dataPageID);
+    rawDataHeader->wUnlatch();
     m_dataBufferPoolManager->unpinDataPage(0, false);
   }
   
-  return newDataPage;
-}
-
-void DataFileManager::subFreeSpace(PageIDType pageID, RecordSizeType recordSize) {
-  PageIDType mapPageID = convertToMapPageID(pageID);
-  int mapIndex = convertToMapIndex(pageID);
-  auto mapPage = reinterpret_cast<FreeSpaceMapFilePage *>
-    (m_dataBufferPoolManager->fetchFreeSpaceMapPage(mapPageID)->getData());
-  mapPage->subFreeSpace(mapIndex, recordSize + DataFilePage::SLOT_SIZE);
-  m_dataBufferPoolManager->unpinFreeSpaceMapPage(mapPageID, true);
+  return rawDataPage;
 }
 
 void DataFileManager::addFreeSpace(PageIDType pageID, RecordSizeType recordSize) {
   PageIDType mapPageID = convertToMapPageID(pageID);
   int mapIndex = convertToMapIndex(pageID);
-  auto mapPage = reinterpret_cast<FreeSpaceMapFilePage *>
-    (m_dataBufferPoolManager->fetchFreeSpaceMapPage(mapPageID)->getData());
+  Page *rawMapPage = m_dataBufferPoolManager->fetchFreeSpaceMapPage(mapPageID);
+  rawMapPage->wLatch();
+  auto mapPage = reinterpret_cast<FreeSpaceMapFilePage *>(rawMapPage->getData());
   mapPage->addFreeSpace(mapIndex, recordSize + DataFilePage::SLOT_SIZE);
+  rawMapPage->wUnlatch();
   m_dataBufferPoolManager->unpinFreeSpaceMapPage(mapPageID, true);
 }
 

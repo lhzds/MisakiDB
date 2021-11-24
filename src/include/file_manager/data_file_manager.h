@@ -13,7 +13,6 @@ public:
   
   Page *allocateDataPage(RecordSizeType recordSize);
   void addFreeSpace(PageIDType pageID, RecordSizeType recordSize);
-  void subFreeSpace(PageIDType pageID, RecordSizeType recordSize);
 
 private:
   static PageIDType convertToDataPageID(PageIDType mapPageID, int mapIndex);
@@ -21,7 +20,6 @@ private:
   static int convertToMapIndex(PageIDType dataPageID);
   
   DataBufferPoolManager *m_dataBufferPoolManager;
-  std::mutex m_fileLatch;
 };
 }
 

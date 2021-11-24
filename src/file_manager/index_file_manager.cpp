@@ -19,44 +19,58 @@ bool IndexFileManager::flushIndexPage(PageIDType pageID) {
 }
 
 Page *IndexFileManager::newIndexPage() {
-  std::lock_guard<std::mutex> lck {m_fileLatch};
+  Page *rawHeader = m_indexBufferPoolManager->fetchIndexPage(0);
+  rawHeader->wLatch();
   
-  auto header = reinterpret_cast<IndexFileHeader *>(m_indexBufferPoolManager->fetchIndexPage(0)->getData());
-  Page *newPage;
+  auto header = reinterpret_cast<IndexFileHeader *>(rawHeader->getData());
+  Page *rawNewPage;
   if (header->getFreePageListHeader() == INVALID_PAGE_ID) {
-    newPage = m_indexBufferPoolManager->appendNewIndexPage(header->getNextPageID());
+    rawNewPage = m_indexBufferPoolManager->appendNewIndexPage(header->getNextPageID());
     header->incNextPageID();
   } else {
-    newPage = m_indexBufferPoolManager->fetchIndexPage(header->getFreePageListHeader());
-    auto freePage = reinterpret_cast<IndexFileFreePage *>(newPage->getData());
-    header->setFreePageListHeader(freePage->getNextFreePageID());
+    rawNewPage = m_indexBufferPoolManager->fetchIndexPage(header->getFreePageListHeader());
+    auto newPage = reinterpret_cast<IndexFileFreePage *>(rawNewPage->getData());
+    header->setFreePageListHeader(newPage->getNextFreePageID());
     // zero out the data
-    memset(newPage->getData(), 0, PAGE_SIZE);
+    memset(rawNewPage->getData(), 0, PAGE_SIZE);
   }
   
+  rawHeader->wUnlatch();
   m_indexBufferPoolManager->unpinIndexPage(0, true);
-  return newPage;
+  return rawNewPage;
 }
 
 bool IndexFileManager::deleteIndexPage(PageIDType pageID) {
-  std::lock_guard<std::mutex> lck {m_fileLatch};
-  auto header = reinterpret_cast<IndexFileHeader *>(m_indexBufferPoolManager->fetchIndexPage(0)->getData());
+  Page *rawHeader = m_indexBufferPoolManager->fetchIndexPage(0);
+  rawHeader->wLatch();
+  
+  auto header = reinterpret_cast<IndexFileHeader *>(rawHeader->getData());
   if (pageID == INVALID_PAGE_ID || pageID < 1 || header->getNextPageID() <= pageID) { // invalid page id(Header page can't be deleted)
+    rawHeader->wUnlatch();
+    m_indexBufferPoolManager->unpinIndexPage(0, false);
     return false;
   }
   
-  Page *page = m_indexBufferPoolManager->fetchIndexPage(pageID);
-  if (page->getPinCount() != 1) {
+  Page *rawFreePage = m_indexBufferPoolManager->fetchIndexPage(pageID);
+  if (rawFreePage->getPinCount() != 1) {
+    m_indexBufferPoolManager->unpinIndexPage(pageID, false);
+    rawHeader->wUnlatch();
+    m_indexBufferPoolManager->unpinIndexPage(0, false);
     return false;
   }
-  auto freePage = reinterpret_cast<IndexFileFreePage *>(page->getData());
+  auto freePage = reinterpret_cast<IndexFileFreePage *>(rawFreePage->getData());
   if (freePage ->isFreePage()) {     // page have been deleted
+    m_indexBufferPoolManager->unpinIndexPage(pageID, false);
+    rawHeader->wUnlatch();
+    m_indexBufferPoolManager->unpinIndexPage(0, false);
     return false;
   }
   freePage ->init();
   freePage ->setNextFreePageID(header->getFreePageListHeader());
   header->setFreePageListHeader(pageID);
+  
   m_indexBufferPoolManager->unpinIndexPage(pageID, true);
+  rawHeader->wUnlatch();
   m_indexBufferPoolManager->unpinIndexPage(0, true);
   return true;
 }
