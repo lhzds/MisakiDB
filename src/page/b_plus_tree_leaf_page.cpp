@@ -25,10 +25,10 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::init(PageIDType pageID, PageIDType parentID, in
  * Helper methods to set/get next page id
  */
 INDEX_TEMPLATE_ARGUMENTS
-PageIDType B_PLUS_TREE_LEAF_PAGE_TYPE::getNextPageId() const { return m_nextPageID; }
+PageIDType B_PLUS_TREE_LEAF_PAGE_TYPE::getNextPageID() const { return m_nextPageID; }
 
 INDEX_TEMPLATE_ARGUMENTS
-void B_PLUS_TREE_LEAF_PAGE_TYPE::setNextPageId(PageIDType nextPageID) { m_nextPageID = nextPageID; }
+void B_PLUS_TREE_LEAF_PAGE_TYPE::setNextPageID(PageIDType nextPageID) { m_nextPageID = nextPageID; }
 
 /**
  * Helper method to find the first index i so that array[i].first >= key
@@ -48,9 +48,7 @@ int B_PLUS_TREE_LEAF_PAGE_TYPE::keyIndex(const KeyType &key, const KeyComparator
  */
 INDEX_TEMPLATE_ARGUMENTS
 KeyType B_PLUS_TREE_LEAF_PAGE_TYPE::keyAt(int index) const {
-  if (index < 0 || getSize() <= index) {
-    throw std::out_of_range("invalid index");
-  }
+  assert (0 <= index && index < getSize());
   return m_array[index].first;
 }
 
@@ -60,9 +58,7 @@ KeyType B_PLUS_TREE_LEAF_PAGE_TYPE::keyAt(int index) const {
  */
 INDEX_TEMPLATE_ARGUMENTS
 const MappingType &B_PLUS_TREE_LEAF_PAGE_TYPE::getItem(int index) {
-  if (index < 0 || getSize() <= index) {
-    throw std::out_of_range("invalid index");
-  }
+  assert (0 <= index && index < getSize());
   return m_array[index];
 }
 
@@ -70,7 +66,7 @@ const MappingType &B_PLUS_TREE_LEAF_PAGE_TYPE::getItem(int index) {
  * INSERTION
  *****************************************************************************/
 /*
- * Insert key & value pair into leaf page ordered by key
+ * insert key & value pair into leaf page ordered by key
  * @return  page size after insertion
  */
 INDEX_TEMPLATE_ARGUMENTS
@@ -169,7 +165,7 @@ INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_LEAF_PAGE_TYPE::moveAllTo(BPlusTreeLeafPage *recipient) {
   recipient->copyNFrom(m_array, getSize());
   setSize(0);
-  recipient->setNextPageId(getNextPageId());
+  recipient->setNextPageID(getNextPageID());
 }
 
 /*****************************************************************************
@@ -209,7 +205,7 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::moveLastToFrontOf(BPlusTreeLeafPage *recipient)
 }
 
 /*
- * Insert item at the front of my items. Move items accordingly.
+ * insert item at the front of my items. Move items accordingly.
  */
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_LEAF_PAGE_TYPE::copyFirstFrom(const MappingType &item) {

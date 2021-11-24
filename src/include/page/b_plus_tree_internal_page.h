@@ -2,7 +2,7 @@
 
 #include "globals.h"
 #include "page/b_plus_tree_page.h"
-#include "buffer/index_buffer_pool_manager.h"
+#include "file_manager/index_file_manager.h"
 
 namespace MisakiDB {
 #define B_PLUS_TREE_INTERNAL_PAGE_TYPE BPlusTreeInternalPage<KeyType, ValueType, KeyComparator>
@@ -39,17 +39,17 @@ public:
   ValueType removeAndReturnOnlyChild();
   
   // Split and Merge utility methods
-  void moveAllTo(BPlusTreeInternalPage *recipient, const KeyType &middleKey, IndexBufferPoolManager *bufferPoolManager);
-  void moveHalfTo(BPlusTreeInternalPage *recipient, IndexBufferPoolManager *bufferPoolManager);
+  void moveAllTo(BPlusTreeInternalPage *recipient, const KeyType &middleKey, IndexFileManager *indexFileManager);
+  void moveHalfTo(BPlusTreeInternalPage *recipient, IndexFileManager *indexFileManager);
   void moveFirstToEndOf(BPlusTreeInternalPage *recipient, const KeyType &middleKey,
-                        IndexBufferPoolManager *bufferPoolManager);
+                        IndexFileManager *indexFileManager);
   void moveLastToFrontOf(BPlusTreeInternalPage *recipient, const KeyType &middleKey,
-                         IndexBufferPoolManager *bufferPoolManager);
+                         IndexFileManager *indexFileManager);
 
 private:
-  void copyNFrom(MappingType *items, int size, IndexBufferPoolManager *bufferPoolManager);
-  void copyLastFrom(const MappingType &pair, IndexBufferPoolManager *bufferPoolManager);
-  void copyFirstFrom(const MappingType &pair, IndexBufferPoolManager *bufferPoolManager);
+  void copyNFrom(MappingType *items, int size, IndexFileManager *indexFileManager);
+  void copyLastFrom(const MappingType &pair, IndexFileManager *indexFileManager);
+  void copyFirstFrom(const MappingType &pair, IndexFileManager *indexFileManager);
   MappingType m_array[0];
 };
-};
+}

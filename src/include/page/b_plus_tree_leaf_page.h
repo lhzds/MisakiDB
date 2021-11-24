@@ -25,8 +25,8 @@ public:
   // method to set default values
   void init(PageIDType pageID, PageIDType parentID = INVALID_PAGE_ID, int maxSize = LEAF_PAGE_SIZE);
   // helper methods
-  PageIDType getNextPageId() const;
-  void setNextPageId(PageIDType nextPageID);
+  PageIDType getNextPageID() const;
+  void setNextPageID(PageIDType nextPageID);
   KeyType keyAt(int index) const;
   int keyIndex(const KeyType &key, const KeyComparator &comparator) const;
   const MappingType &getItem(int index);

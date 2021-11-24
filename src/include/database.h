@@ -1,7 +1,7 @@
 #pragma once
 #include "globals.h"
 #include "options.h"
-#include "b_plus_tree.h"
+#include "index/b_plus_tree.h"
 #include "data_accessor.h"
 #include "file_store/file_store.h"
 #include "buffer/index_buffer_pool_manager.h"

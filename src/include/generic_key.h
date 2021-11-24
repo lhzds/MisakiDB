@@ -1,23 +1,26 @@
 #include "globals.h"
 
-template <size_t KeySize>
+namespace MisakiDB {
+template<size_t KeySize>
 class GenericKey {
 public:
+  GenericKey() = default;
   GenericKey(const std::string &data) {
-    memcpy(m_data, data.c_str(), KeySize);
+    strcpy_s(m_data, KeySize, data.c_str());
   }
   GenericKey(const char *data) {
-    memcpy(m_data, data, KeySize);
+    strcpy_s(m_data, KeySize, data);
   };
   const char *getData() const { return m_data; };
+  
 private:
-  char m_data[KeySize];
+  char m_data[KeySize]{};
 };
 
-template <size_t KeySize>
+template<size_t KeySize>
 class GenericComparator {
 public:
-  inline int operator () (const GenericKey<KeySize> &lhs, const GenericKey<KeySize> &rhs) const {
+  inline int operator()(const GenericKey<KeySize> &lhs, const GenericKey<KeySize> &rhs) const {
     const char *lhsData = lhs.getData();
     const char *rhsData = rhs.getData();
     for (size_t i = 0; i < KeySize; ++i) {
@@ -28,3 +31,4 @@ public:
     return 0;
   }
 };
+}

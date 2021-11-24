@@ -14,6 +14,7 @@ BufferPoolManager::BufferPoolManager(size_t poolSize, FileStore *fileStore, bool
 }
 
 BufferPoolManager::~BufferPoolManager() {
+  flushAllPages();
   delete[] m_pages;
   delete m_replacer;
 }

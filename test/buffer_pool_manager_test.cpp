@@ -14,7 +14,7 @@ protected:
     fileStore = new FileStore(dbName);
   }
   
-  virtual void TearDown() {
+  void TearDown() override {
     delete fileStore;
   }
   

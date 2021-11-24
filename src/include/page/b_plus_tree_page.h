@@ -44,4 +44,4 @@ private:
   PageIDType m_parentPageID;
   PageIDType m_pageID;
 };
-};
+}
