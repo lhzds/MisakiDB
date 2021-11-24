@@ -32,7 +32,19 @@ public:
   
   /** @return true if the page in memory has been modified from the page on disk, false otherwise */
   inline bool isDirty() const { return m_isDirty; }
-
+  
+  /** Acquire the page write latch. */
+  inline void wLatch() { m_rwLatch.lock(); }
+  
+  /** Release the page write latch. */
+  inline void wUnlatch() { m_rwLatch.unlock(); }
+  
+  /** Acquire the page read latch. */
+  inline void rLatch() { m_rwLatch.lock_shared(); }
+  
+  /** Release the page read latch. */
+  inline void rUnlatch() { m_rwLatch.unlock_shared(); }
+  
 protected:
   static constexpr size_t OFFSET_PAGE_START = 0;
 
@@ -50,6 +62,8 @@ private:
   int m_pinCount = 0;
   /** True if the page is dirty, i.e. it is different from its corresponding page on disk. */
   bool m_isDirty = false;
+  /** Page latch. */
+  std::shared_mutex m_rwLatch;
 };
 }
 
