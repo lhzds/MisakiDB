@@ -107,7 +107,7 @@ TEST_F(DataAccessorTest, blobTest) {
       da->removeData(inserteds[i]);
     }
   }
-  
+
   for (int i = 0; i < 10; ++i) {
     if (i % sieve != 0) {
       std::string record;
@@ -115,7 +115,6 @@ TEST_F(DataAccessorTest, blobTest) {
         record.append(std::string(blobMinSize / 2, 'a' + j));
         record.append(std::string(blobMinSize - blobMinSize / 2, 'a' + j - 1));
       }
-  
       ASSERT_EQ(record, da->getData(inserteds[i]));
     }
   }

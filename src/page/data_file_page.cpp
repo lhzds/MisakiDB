@@ -76,7 +76,7 @@ std::variant<RecordSizeType, std::string> DataFilePage::removeRecord(int slotArr
   RecordSizeType movedSize = getRecordOffset(slotArrayIndex) - m_freeSpaceEndOffset;
   for (int i = 0; i < getSlotsNum(); ++i) {
     auto offset = getRecordOffset(i);
-    if (offset != INVALID_OFFSET && m_freeSpaceEndOffset <= offset < m_freeSpaceEndOffset + movedSize) {
+    if (offset != INVALID_OFFSET && m_freeSpaceEndOffset <= offset && offset < m_freeSpaceEndOffset + movedSize) {
       setRecordOffset(i, offset + recordLength);
     }
   }

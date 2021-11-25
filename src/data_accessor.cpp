@@ -50,7 +50,7 @@ RecordIDType DataAccessor::insertData(const std::string &value) {
     rawTargetPage = m_dataFileManager->allocateDataPage(blobFirstPageID.size());
     rawTargetPage->wLatch();
     auto targetPage = reinterpret_cast<DataFilePage *>(rawTargetPage->getData());
-    slotArrayIndex = targetPage->insertRecord(value, true);
+    slotArrayIndex = targetPage->insertRecord(blobFirstPageID, true);
   } else {
     rawTargetPage = m_dataFileManager->allocateDataPage(value.size());
     rawTargetPage->wLatch();
@@ -98,7 +98,7 @@ std::string DataAccessor::getBlob(const std::string &blobFirstPageID) const {
   while (nextBlobPageID != INVALID_PAGE_ID) {
     Page *rawBlobPage = m_dataFileManager->fetchBlobPage(nextBlobPageID);
     rawBlobPage->rLatch();
-    auto blobPage = reinterpret_cast<BlobFilePage *>(rawBlobPage);
+    auto blobPage = reinterpret_cast<BlobFilePage *>(rawBlobPage->getData());
     blob.append(blobPage->readData());
     nextBlobPageID = blobPage->getBlobListNextPageID();
     rawBlobPage->rUnlatch();
@@ -112,7 +112,7 @@ void DataAccessor::removeBlob(const std::string &blobFirstPageID) {
   while (nextBlobPageID != INVALID_PAGE_ID) {
     Page *rawBlobPage = m_dataFileManager->fetchBlobPage(nextBlobPageID);
     rawBlobPage->rLatch();
-    auto blobPage = reinterpret_cast<BlobFilePage *>(rawBlobPage);
+    auto blobPage = reinterpret_cast<BlobFilePage *>(rawBlobPage->getData());
     PageIDType thisBlobPageID = nextBlobPageID;
     nextBlobPageID = blobPage->getBlobListNextPageID();
     rawBlobPage->rUnlatch();
