@@ -44,11 +44,10 @@ public:
   INDEXITERATOR_TYPE begin();
   INDEXITERATOR_TYPE begin(const KeyType &key);
   INDEXITERATOR_TYPE end();
-  
-  // expose for test purpose
-  Page *findLeafPage(const KeyType &key, bool leftMost = false);
 
 private:
+  Page *findLeafPage(const KeyType &key, bool leftMost = false);
+  
   void startNewTree(const KeyType &key, const ValueType &value);
   
   bool insertIntoLeaf(const KeyType &key, const ValueType &value);

@@ -4,17 +4,22 @@ namespace MisakiDB {
 INDEX_TEMPLATE_ARGUMENTS
 BPLUSTREE_TYPE::BPlusTree(IndexFileManager *indexFileManager, const KeyComparator &comparator,
                           int leafMaxSize, int internalMaxSize)
-    : m_rootPageID(INVALID_PAGE_ID),
-      m_indexFileManager(indexFileManager),
+    : m_indexFileManager(indexFileManager),
       m_comparator(comparator),
       m_leafMaxSize(leafMaxSize),
-      m_internalMaxSize(internalMaxSize) {}
+      m_internalMaxSize(internalMaxSize) {
+  auto indexFileHeader = reinterpret_cast<IndexFileHeader *>(m_indexFileManager->fetchIndexPage(0)->getData());
+  m_rootPageID = indexFileHeader->getRootPageID();
+  m_indexFileManager->unpinIndexPage(0, false);
+}
 
 /*
  * Helper function to decide whether current b+tree is empty
  */
 INDEX_TEMPLATE_ARGUMENTS
-bool BPLUSTREE_TYPE::isEmpty() const { return m_rootPageID == INVALID_PAGE_ID; }
+bool BPLUSTREE_TYPE::isEmpty() const {
+  return m_rootPageID == INVALID_PAGE_ID;
+}
 
 /*****************************************************************************
  * SEARCH
