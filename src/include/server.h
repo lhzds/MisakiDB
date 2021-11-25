@@ -17,7 +17,7 @@ public:
   void start();
 
 protected:
-  void serve_helper(SOCKET clientSocket);
+  void serve(SOCKET clientSocket);
 
 private:
   SOCKET m_serverSocket;

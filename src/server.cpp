@@ -41,7 +41,7 @@ auto Server::open(const std::string &databaseName, const Options &options) {
                            return database.getName() == databaseName; }) };
 
   // If the database does not opened, open it
-  if (database != end(this->m_databases)) {
+  if (database == end(this->m_databases)) {
     this->m_databases.emplace_back(databaseName, options);
     database = --end(this->m_databases);
   }
@@ -67,19 +67,21 @@ void Server::start() {
   while (true) {
     // Accept client
     SOCKET clientSocket { accept(this->m_serverSocket, nullptr, nullptr) };
-    if (INVALID_SOCKET == clientSocket) throw "Accept Error";
+    if (INVALID_SOCKET == clientSocket) std::cout << "Accept Error" << std::endl;
 
     // Start serving
-    this->m_threadPool.submit(&Server::serve_helper, this, clientSocket);
+    else this->m_threadPool.submit(&Server::serve, this, clientSocket);
   }
 }
 
-void Server::serve_helper(SOCKET clientSocket) {
+void Server::serve(SOCKET clientSocket) {
   std::_List_iterator<DataBase> database;
+  bool notOpen { true };
+
+  // Message buffer
+  char buffer[8192] { 0 };
 
   while (true) {
-    // Message buffer
-    char buffer[4096] { 0 };
     // Get message total length
     recv(clientSocket, buffer, sizeof (buffer) - 1, 0);
     int64_t length { atoll(buffer) };
@@ -87,11 +89,16 @@ void Server::serve_helper(SOCKET clientSocket) {
 
     // Receive message until length equals or belows zero
     std::string message;
-    while ((length -= recv(clientSocket, buffer, sizeof (buffer) - 1, 0)) > 0) {
-      // Receive the data and append it to message
+    do {
+      // Receive the data and check whether the socket is closed
+      int ret { recv(clientSocket, buffer, sizeof (buffer) - 1, 0) };
+      if (SOCKET_ERROR == ret or 0 == ret) { closesocket(clientSocket); return; }
+      else length -= ret;
+
+      // append it to message
       message += buffer;
       memset(buffer, 0, sizeof(buffer));
-    }
+    } while (length > 0);
 
     // Find the first space
     uint64_t index { 0 };
@@ -100,17 +107,41 @@ void Server::serve_helper(SOCKET clientSocket) {
     // Slice out the operation
     std::string operation { message.substr(0, index++) };
 
+    // Make all the operation uppercase
+    for (auto &ch : operation) ch = toupper(ch);
 
-    // Switch on the operation
-    if ("OPEN" == operation) {
+    // Check if the database is opened
+    if (notOpen) {
+      if ("OPEN" == operation) {
+        // The user opens a database
+        notOpen = false;
+
+        // Slice out the database name
+        std::string databaseName { message.substr(index) };
+
+        // Perform open operation
+        database = open(databaseName, Options { });
+
+        // Reply message
+        send(clientSocket, "OPEN SUCCESSFUL\n", 16, 0);
+      }
+
+      // The user have not opened any database yet, reply error message
+      else send(clientSocket, "NO DATABASE OPENED YET\n", 23, 0);
+    }
+
+    // If the database is opened, then switch on the operation
+    else if ("OPEN" == operation) {
+      // Close the current database
+      close(database);
+
       // Slice out the database name
       std::string databaseName { message.substr(index) };
 
       // Perform open operation
       database = open(databaseName, Options { });
 
-      // Reply message
-      send(clientSocket, "OPEN SUCCESSFUL", 15, 0);
+      send(clientSocket, "OPEN SUCCESSFUL\n", 16, 0);
     }
 
     else if ("GET" == operation) {
@@ -118,7 +149,11 @@ void Server::serve_helper(SOCKET clientSocket) {
       KeyType key { message.substr(index) };
 
       // Perform get operation
-      if (database->get(key, message)) message = "GET FAILED: KEY DOES NOT EXIST";
+      if (database->get(key, message)) message = "GET FAILED: KEY DOES NOT EXIST\n";
+
+      // Reply length
+      std::string messageLength { std::to_string(message.length()) };
+      send(clientSocket, messageLength.c_str(), messageLength.length(), 0);
 
       // Reply message
       send(clientSocket, message.c_str(), message.length(), 0);
@@ -133,22 +168,22 @@ void Server::serve_helper(SOCKET clientSocket) {
       KeyType key { message.substr(index, nextIndex++ - index) };
 
       // Slice out the value
-      ValueType value { message.substr(nextIndex) };
+      std::string value { message.substr(nextIndex) };
 
       // Perform set operation
       database->set(key, value);
 
       // Reply message
-      send(clientSocket, "SET SUCCESSFUL", 14, 0);
+      send(clientSocket, "SET SUCCESSFUL\n", 15, 0);
     }
 
-    else if ("REMOVE" == operation) {
+    else if ("DELETE" == operation) {
       // Slice out the key
       KeyType key { message.substr(index) };
 
-      // Perform remove operation
-      if (database->remove(key)) message = "REMOVE SUCCESSFUL";
-      else message = "REMOVE FAILED: KEY DOES NOT EXIST";
+      // Perform delete operation
+      if (database->remove(key)) message = "DELETE SUCCESSFUL\n";
+      else message = "DELETE FAILED: KEY DOES NOT EXIST\n";
 
       // Reply message
       send(clientSocket, message.c_str(), message.length(), 0);
@@ -159,24 +194,15 @@ void Server::serve_helper(SOCKET clientSocket) {
       KeyType key { message.substr(index) };
 
       // Perform exist operation
-      if (database->exist(key)) message = "EXIST";
-      else message = "NOT EXIST";
+      if (database->exist(key)) message = "EXIST\n";
+      else message = "NOT EXIST\n";
 
       // Reply message
       send(clientSocket, message.c_str(), message.length(), 0);
     }
 
-    else if ("CLOSE" == operation) {
-      // Close database
-      close(database);
-
-      // Reply message
-      send(clientSocket, "DATABASE CLOSED", 15, 0);
-
-      // Close socket
-      closesocket(clientSocket);
-      break;
-    }
+    // Unrecognized command
+    else send(clientSocket, "UNRECOGNIZED COMMAND\n", 21, 0);
   }
 }
 }
