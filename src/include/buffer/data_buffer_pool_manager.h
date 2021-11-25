@@ -23,5 +23,13 @@ public:
   bool flushFreeSpaceMapPage(PageIDType pageID);
 
   Page *appendNewFreeSpaceMapPage(PageIDType pageID);
+  
+  Page *fetchBlobPage(PageIDType pageID);
+  
+  bool unpinBlobPage(PageIDType pageID, bool isDirty);
+  
+  bool flushBlobPage(PageIDType pageID);
+  
+  Page *appendNewBlobPage(PageIDType pageID);
 };
 }

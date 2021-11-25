@@ -26,6 +26,9 @@ set(SOURCES "src/file_store/file_store.cpp"
         "src/index/index_iterator.cpp"
         "src/index/b_plus_tree.cpp"
         "src/data_accessor.cpp"
+        "src/page/blob_file_header.cpp"
+        "src/page/blob_file_free_page.cpp"
+        "src/page/blob_file_page.cpp"
         )
 
 add_library(MisakiDB ${SOURCES})

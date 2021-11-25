@@ -6,11 +6,10 @@
 namespace MisakiDB{
 class IndexFileManager {
 public:
-  IndexFileManager(IndexBufferPoolManager *indexBufferPoolManager);
+  explicit IndexFileManager(IndexBufferPoolManager *indexBufferPoolManager);
   
   Page *fetchIndexPage(PageIDType pageID);
   bool unpinIndexPage(PageIDType pageID, bool isDirty);
-  bool flushIndexPage(PageIDType pageID);
   
   Page *newIndexPage();
   bool deleteIndexPage(PageIDType pageID);

@@ -3,6 +3,7 @@
 namespace MisakiDB {
 void IndexFileFreePage::init() {
   m_magic = MAGIC_NUM;
+  m_nextFreePageID = INVALID_PAGE_ID;
 }
 
 bool IndexFileFreePage::isFreePage() const {

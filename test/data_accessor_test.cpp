@@ -11,6 +11,7 @@ protected:
     DeleteFileA((dbName + "\\idx.mdb").c_str());
     DeleteFileA((dbName + "\\dt.mdb").c_str());
     DeleteFileA((dbName + "\\fs_map.mdb").c_str());
+    DeleteFileA((dbName + "\\blob.mdb").c_str());
     RemoveDirectoryA(dbName.c_str());
     
     fileStore = new FileStore(dbName);

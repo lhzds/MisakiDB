@@ -6,12 +6,14 @@ FileStore::FileStore(const std::string &dbName) {
   std::string indexFileName {dbName + "\\idx.mdb"};
   std::string dataFileName { dbName + "\\dt.mdb"};
   std::string freeSpaceMapFileName {dbName + "\\fs_map.mdb"};
+  std::string blobFileName {dbName + "\\blob.mdb"};
   
   bool needInitFileStruct = false;
   if ((needInitFileStruct = CreateDirectoryA(dbName.c_str(), NULL))) {
     createFile(indexFileName);
     createFile(dataFileName);
     createFile(freeSpaceMapFileName);
+    createFile(blobFileName);
   }
   
   m_indexFileIO.open(indexFileName, std::ios::binary | std::ios::in | std::ios::out);
@@ -26,6 +28,10 @@ FileStore::FileStore(const std::string &dbName) {
   if (!m_freeSpaceMapFileIO.is_open()) {
     throw std::runtime_error("fail to open free-space map file");
   }
+  m_blobFileIO.open(blobFileName, std::ios::binary | std::ios::in | std::ios::out);
+  if (!m_blobFileIO.is_open()) {
+    throw std::runtime_error("fail to open blob file");
+  }
   
   if (needInitFileStruct) {
     initFileStruct();
@@ -36,6 +42,7 @@ FileStore::~FileStore() {
   m_indexFileIO.close();
   m_dataFileIO.close();
   m_freeSpaceMapFileIO.close();
+  m_blobFileIO.close();
 }
 
 FileSizeType FileStore::pageIDToOffset(PageIDType pageID) {
@@ -54,6 +61,9 @@ void FileStore::readRawPage(FileType fileType, PageIDType pageID, ByteType *raw)
   case FileType::FREE_SPACE_MAP:
     readRawPage_helper(m_freeSpaceMapFileIO, pageID, raw, "free-space map file");
     break;
+  case FileType::BLOB:
+    readRawPage_helper(m_blobFileIO, pageID, raw, "blob file");
+    break;
   default:
     throw std::runtime_error("wrong file type");
     break;
@@ -70,6 +80,9 @@ void FileStore::writeRawPage(FileType fileType, PageIDType pageID, const ByteTyp
     break;
   case FileType::FREE_SPACE_MAP:
     writeRawPage_helper(m_freeSpaceMapFileIO, pageID, raw, "free-space map file");
+    break;
+  case FileType::BLOB:
+    writeRawPage_helper(m_blobFileIO, pageID, raw, "blob file");
     break;
   default:
     throw std::runtime_error("wrong file type");
@@ -130,5 +143,11 @@ void FileStore::initFileStruct() {
   auto initDataFileHeader = reinterpret_cast<DataFileHeader *>(raw3);
   initDataFileHeader->init();
   writeRawPage_helper(m_dataFileIO, 0, raw3, "data file");
+  
+  // init blob file header
+  ByteType raw4[PAGE_SIZE]{};
+  auto initBlobFileHeader = reinterpret_cast<BlobFileHeader *>(raw4);
+  initBlobFileHeader->init();
+  writeRawPage_helper(m_blobFileIO, 0, raw4, "blob file");
 }
 }

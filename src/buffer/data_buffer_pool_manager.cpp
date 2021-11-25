@@ -35,4 +35,21 @@ bool DataBufferPoolManager::flushFreeSpaceMapPage(PageIDType pageID) {
 Page *DataBufferPoolManager::appendNewFreeSpaceMapPage(PageIDType pageID) {
   return BufferPoolManager::appendNewPage(FileType::FREE_SPACE_MAP, pageID);
 }
+
+Page *DataBufferPoolManager::fetchBlobPage(PageIDType pageID) {
+  return BufferPoolManager::fetchPage(FileType::BLOB, pageID);
+}
+
+bool DataBufferPoolManager::unpinBlobPage(PageIDType pageID, bool isDirty) {
+  return BufferPoolManager::unpinPage(FileType::BLOB, pageID, isDirty);
+}
+
+bool DataBufferPoolManager::flushBlobPage(PageIDType pageID) {
+  return BufferPoolManager::flushPage(FileType::BLOB, pageID);
+}
+
+Page *DataBufferPoolManager::appendNewBlobPage(PageIDType pageID) {
+  return BufferPoolManager::appendNewPage(FileType::BLOB, pageID);
+}
+
 }

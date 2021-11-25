@@ -61,17 +61,17 @@ public:
    * @return nullptr if no new pages could be appended to file, otherwise pointer to new page
    */
   virtual Page *appendNewPage(FileType fileType, PageIDType pageID);
-  
+
+private:
   /**
    * Flushes all the pages in the buffer pool to disk.
    */
   void flushAllPages();
-
-private:
+  
   Page *fetchExistentPage(FileType fileType, PageIDType pageID);
-
+  
   Page *getVictimPage();
-
+  
   bool flushPage_helper(FileType fileType, PageIDType pageID);
 
 protected:
