@@ -12,10 +12,10 @@ class DataBase
 {
 public:
   DataBase(const std::string &databaseName, const Options &options);
-  bool get(const KeyType &key, ValueType &value);
+  bool get(const KeyType &key, std::string &value);
   bool remove(const KeyType &key);
   bool exist(const KeyType &key);
-  void set(const KeyType &key, const ValueType &value);
+  void set(const KeyType &key, const std::string &value);
 
   void use();
   void unuse();
@@ -24,17 +24,17 @@ public:
   std::string getName() const;
 
 protected:
-  RecordIDType getRecordID_helper(const KeyType &key) const;
-  ValueType getValue_helper(RecordIDType recordID) const;
+  RecordIDType getRecordID(const KeyType &key) const;
+  std::string getValue(RecordIDType recordID) const;
 
-  RecordIDType removeRecordID_helper(const KeyType &key);
-  void removeRecord_helper(RecordIDType recordID);
+  RecordIDType removeRecordID(const KeyType &key);
+  void removeRecord(RecordIDType recordID);
 
-  RecordIDType addRecord_helper(const KeyType &key, const ValueType &value);
-  void addRecordID_helper(RecordIDType recordID);
+  RecordIDType addRecord(const KeyType &key, const std::string &value);
+  void addRecordID(RecordIDType recordID);
 
 private:
-  std::atomic_uint64_t m_inuse { 0 };
+  std::uint64_t m_inuse { 0 };
   std::string m_databaseName;
 
   FileStore m_fileStore;
