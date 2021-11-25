@@ -22,4 +22,13 @@ void BlobFilePage::setDataSize(int dataSize) {
   m_dataSize = dataSize;
 }
 
+void BlobFilePage::writeData(const char *data, size_t dataSize) {
+  m_dataSize = dataSize;
+  memcpy(m_data, data, dataSize);
+}
+
+std::string BlobFilePage::readData() const {
+  return std::string(m_data, m_dataSize);
+}
+
 }

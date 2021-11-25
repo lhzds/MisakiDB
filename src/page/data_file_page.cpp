@@ -51,20 +51,28 @@ void DataFilePage::setIsBlob(int slotArrayIndex, bool isBlob) {
   getSlotArray()[slotArrayIndex].m_isBlob = isBlob;
 }
 
-std::string DataFilePage::getRecord(int slotArrayIndex) const {
+std::string DataFilePage::getRecord_helper(int slotArrayIndex) const {
   assert(0 <= slotArrayIndex && slotArrayIndex < getSlotsNum());
   return std::string(reinterpret_cast<const char *>(this) + getRecordOffset(slotArrayIndex),
                      getRecordLength(slotArrayIndex));
 }
 
-RecordSizeType DataFilePage::removeRecord(int slotArrayIndex) {
+std::pair<std::string, bool> DataFilePage::getRecord(int slotArrayIndex) const {
+  return {getRecord_helper(slotArrayIndex), isBlob(slotArrayIndex) };
+}
+
+std::variant<RecordSizeType, std::string> DataFilePage::removeRecord(int slotArrayIndex) {
   assert(0 <= slotArrayIndex && slotArrayIndex < getSlotsNum());
   assert(getRecordOffset(slotArrayIndex) != INVALID_OFFSET);
   
+  std::string record;
+  bool isBlob = this->isBlob(slotArrayIndex);
+  if (isBlob) {
+    record = getRecord_helper(slotArrayIndex);
+  }
   RecordSizeType recordLength = getRecordLength(slotArrayIndex);
   char *records = getRecords();
   char *newRecords = records + recordLength;
-  auto tmp = getRecordOffset(slotArrayIndex);
   RecordSizeType movedSize = getRecordOffset(slotArrayIndex) - m_freeSpaceEndOffset;
   for (int i = 0; i < getSlotsNum(); ++i) {
     auto offset = getRecordOffset(i);
@@ -77,10 +85,14 @@ RecordSizeType DataFilePage::removeRecord(int slotArrayIndex) {
   setRecordOffset(slotArrayIndex, INVALID_OFFSET);
   --m_recordNum;
   ++m_invalidSlotNum;
-  return recordLength;
+  if (isBlob) {
+    return record;
+  } else {
+    return recordLength;
+  }
 }
 
-RecordSizeType DataFilePage::insertRecord(const std::string& record) {
+RecordSizeType DataFilePage::insertRecord(const std::string& record, bool isBlob) {
   int targetIndex;
   if (m_invalidSlotNum != 0) {
     for (int i = 0; i < getSlotsNum(); ++i) {
@@ -97,6 +109,7 @@ RecordSizeType DataFilePage::insertRecord(const std::string& record) {
   m_freeSpaceEndOffset -= record.size();
   setRecordOffset(targetIndex, m_freeSpaceEndOffset);
   setRecordLength(targetIndex, record.size());
+  setIsBlob(targetIndex, isBlob);
   char *records = getRecords();
   memcpy(records, record.c_str(), record.size());
   return targetIndex;

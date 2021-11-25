@@ -2,7 +2,6 @@
 #include "fileapi.h"
 #include "data_accessor.h"
 #include "page/data_file_page.h"
-#include "file_manager/data_file_manager.h"
 
 namespace MisakiDB {
 class DataAccessorTest : public testing::Test {
@@ -25,7 +24,7 @@ protected:
   const std::string dbName{"test_db"};
 };
 
-TEST_F(DataAccessorTest, DataAccessorTest1) {
+TEST_F(DataAccessorTest, slobTest) {
   DataBufferPoolManager *dbpm { new DataBufferPoolManager(30, fileStore) };
   DataFileManager *dfm { new DataFileManager(dbpm) };
   DataAccessor *da { new DataAccessor(dfm) };
@@ -80,6 +79,48 @@ TEST_F(DataAccessorTest, DataAccessorTest1) {
     }
   }
   
+  delete da;
+  delete dfm;
+  delete dbpm;
+}
+
+TEST_F(DataAccessorTest, blobTest) {
+  DataBufferPoolManager *dbpm { new DataBufferPoolManager(30, fileStore) };
+  DataFileManager *dfm { new DataFileManager(dbpm) };
+  DataAccessor *da { new DataAccessor(dfm) };
+  
+  size_t blobMinSize = DataFilePage::MAX_RECORD_SIZE + 1;
+  
+  std::vector<RecordIDType> inserteds;
+  for (int i = 0; i < 10; ++i) {
+    std::string record;
+    for (int j = 0; j <= i; ++j) {
+      record.append(std::string(blobMinSize / 2, 'a' + j));
+      record.append(std::string(blobMinSize - blobMinSize / 2, 'a' + j - 1));
+    }
+    inserteds.emplace_back(da->insertData(record));
+  }
+  
+  int sieve = 2;
+  for (int i = 0; i < 10; ++i) {
+    if (i % sieve == 0) {
+      da->removeData(inserteds[i]);
+    }
+  }
+  
+  for (int i = 0; i < 10; ++i) {
+    if (i % sieve != 0) {
+      std::string record;
+      for (int j = 0; j <= i; ++j) {
+        record.append(std::string(blobMinSize / 2, 'a' + j));
+        record.append(std::string(blobMinSize - blobMinSize / 2, 'a' + j - 1));
+      }
+  
+      ASSERT_EQ(record, da->getData(inserteds[i]));
+    }
+  }
+  
+  delete da;
   delete dfm;
   delete dbpm;
 }

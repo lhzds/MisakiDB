@@ -1,5 +1,6 @@
 #pragma once
 #include "globals.h"
+#include <variant>
 
 namespace MisakiDB {
 class DataFilePage {
@@ -37,6 +38,8 @@ private:
   inline void setRecordOffset(int slotArrayIndex, RecordSizeType offset);
   inline void setRecordLength(int slotArrayIndex, RecordSizeType length);
   inline void setIsBlob(int slotArrayIndex, bool isBlob);
+  
+  inline std::string getRecord_helper(int slotArrayIndex) const;
 
 public:
   static constexpr size_t SLOT_SIZE { sizeof(Slot) };
@@ -45,8 +48,8 @@ public:
   static constexpr RecordSizeType MAX_RECORD_SIZE { PAGE_SIZE - MIN_FIXED_SIZE - SLOT_SIZE };
   
   void init();
-  std::string getRecord(int slotArrayNum) const;
-  RecordSizeType removeRecord(int slotArrayIndex);
-  RecordSizeType insertRecord(const std::string& record);
+  std::pair<std::string, bool> getRecord(int slotArrayNum) const;
+  std::variant<RecordSizeType, std::string> removeRecord(int slotArrayIndex);
+  RecordSizeType insertRecord(const std::string& record, bool isBlob);
 };
 }
