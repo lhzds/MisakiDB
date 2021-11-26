@@ -7,6 +7,7 @@
 #include "file_store/file_store.h"
 #include "buffer/index_buffer_pool_manager.h"
 #include "buffer/data_buffer_pool_manager.h"
+#include "util.h"
 
 namespace MisakiDB {
 using BPlusTreeIndex = BPlusTree<GenericKey<RECORD_KEY_SIZE>, RecordIDType,
@@ -15,7 +16,7 @@ class DataBase
 {
 public:
   DataBase(const std::string &databaseName, const Options &options);
-  bool get(std::string &key, std::string &value);
+  std::optional<std::string> get(std::string &key);
   bool remove(std::string &key);
   bool exist(std::string &key);
   void set(std::string &key, const std::string &value);
@@ -28,15 +29,6 @@ public:
 
 protected:
   void processKey(std::string &key);
-
-  RecordIDType getRecordID(const std::string &key) const;
-  std::string getValue(RecordIDType recordID) const;
-
-  RecordIDType removeRecordID(const std::string &key);
-  void removeRecord(RecordIDType recordID);
-
-  RecordIDType addRecord(const std::string &key, const std::string &value);
-  void addRecordID(RecordIDType recordID);
 
 private:
   std::uint64_t m_inuse { 0 };

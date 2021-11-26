@@ -32,10 +32,10 @@ public:
   bool insert(const KeyType &key, const ValueType &value);
   
   // Remove a key and its value from this B+ tree.
-  bool remove(const KeyType &key);
+  std::optional<ValueType> remove(const KeyType &key);
   
   // return the value associated with a given key
-  bool getValue(const KeyType &key, std::vector<ValueType> *result);
+  std::optional<ValueType> getValue(const KeyType &key);
   
   // index iterator
   INDEXITERATOR_TYPE begin();

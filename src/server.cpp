@@ -1,7 +1,7 @@
 #include "server.h"
 
 namespace MisakiDB{
-Server::Server() : m_threadPool { 1000 } {
+Server::Server() : m_threadPool { 4 } {
   // Initialize DLL
   WSADATA wsdata;
   if (0 != WSAStartup(MAKEWORD(2, 2), &wsdata)) throw "WSAStartup Error";
@@ -24,9 +24,6 @@ Server::Server() : m_threadPool { 1000 } {
 }
 
 Server::~Server() {
-  // Close socket
-  closesocket(this->m_serverSocket);
-
   // WSACleanup
   WSACleanup();
 }
@@ -67,12 +64,14 @@ void Server::start() {
   while (true) {
     // Accept client
     SOCKET clientSocket { accept(this->m_serverSocket, nullptr, nullptr) };
-    if (INVALID_SOCKET == clientSocket) std::cout << "Accept Error" << std::endl;
+    if (INVALID_SOCKET == clientSocket) break;
 
     // Start serving
     else this->m_threadPool.submit(&Server::serve, this, clientSocket);
   }
 }
+
+SOCKET Server::getServerSocket() { return this->m_serverSocket; }
 
 void Server::serve(SOCKET clientSocket) {
   std::_List_iterator<DataBase> database;
@@ -117,7 +116,7 @@ void Server::serve(SOCKET clientSocket) {
         notOpen = false;
 
         // Slice out the database name
-        std::string databaseName { message.substr(index) };
+        std::string databaseName { trim_copy(message.substr(index)) };
 
         // Perform open operation
         database = open(databaseName, Options { });
@@ -136,7 +135,7 @@ void Server::serve(SOCKET clientSocket) {
       close(database);
 
       // Slice out the database name
-      std::string databaseName { message.substr(index) };
+      std::string databaseName { trim_copy(message.substr(index)) };
 
       // Perform open operation
       database = open(databaseName, Options { });
@@ -149,7 +148,7 @@ void Server::serve(SOCKET clientSocket) {
       std::string key { message.substr(index) };
 
       // Perform get operation
-      if (database->get(key, message)) message = "GET FAILED: KEY DOES NOT EXIST\n";
+      message = database->get(key).value_or("GET FAILED: KEY DOES NOT EXIST\n");
 
       // Reply length
       std::string messageLength { std::to_string(message.length()) };

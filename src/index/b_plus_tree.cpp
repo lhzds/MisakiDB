@@ -30,11 +30,11 @@ bool BPLUSTREE_TYPE::isEmpty() {
  * @return : true means key exists
  */
 INDEX_TEMPLATE_ARGUMENTS
-bool BPLUSTREE_TYPE::getValue(const KeyType &key, std::vector<ValueType> *result) {
+std::optional<ValueType> BPLUSTREE_TYPE::getValue(const KeyType &key) {
   std::shared_lock<std::shared_mutex> latch { m_treeRWLatch };
 
   if (isEmpty()) {
-    return false;
+    return std::nullopt;
   }
   
   auto leafPtr = reinterpret_cast<LeafPage *>(findLeafPage(key, false)->getData());
@@ -42,10 +42,10 @@ bool BPLUSTREE_TYPE::getValue(const KeyType &key, std::vector<ValueType> *result
   ValueType val;
   bool keyExist = leafPtr->lookup(key, &val, m_comparator);
   m_indexFileManager->unpinIndexPage(leafPtr->getPageID(), false);
-  if (keyExist && result != nullptr) {
-    result->push_back(val);
+  if (keyExist) {
+    return val;
   }
-  return keyExist;
+  return std::nullopt;
 }
 
 /*****************************************************************************
@@ -222,30 +222,28 @@ void BPLUSTREE_TYPE::insertIntoParent(BPlusTreePage *oldNode, const KeyType &key
  * otherwise return true.
  */
 INDEX_TEMPLATE_ARGUMENTS
-bool BPLUSTREE_TYPE::remove(const KeyType &key) {
+std::optional<ValueType> BPLUSTREE_TYPE::remove(const KeyType &key) {
   std::unique_lock<std::shared_mutex> latch { m_treeRWLatch };
   if (isEmpty()) {
-    return false;
+    return std::nullopt;
   }
   
   auto leafPtr = reinterpret_cast<LeafPage *>(findLeafPage(key, false)->getData());
-  auto oldSize = leafPtr->getSize();
-  leafPtr->removeAndDeleteRecord(key, m_comparator);
-  auto newSize = leafPtr->getSize();
-  if (oldSize == newSize) {
+  auto removedValue = leafPtr->removeAndDeleteRecord(key, m_comparator);
+  if (not removedValue.has_value()) {
     m_indexFileManager->unpinIndexPage(leafPtr->getPageID(), false);
-    return false;
+    return std::nullopt;
   }
   
   bool needDelete = false;
-  if (newSize < leafPtr->getMinSize()) {
+  if (leafPtr->getSize() < leafPtr->getMinSize()) {
     needDelete = coalesceOrRedistribute(leafPtr);
   }
   m_indexFileManager->unpinIndexPage(leafPtr->getPageID(), true);
   if (needDelete) {
     m_indexFileManager->deleteIndexPage(leafPtr->getPageID());
   }
-  return true;
+  return removedValue;
 }
 
 /*

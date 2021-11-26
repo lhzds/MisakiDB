@@ -4,6 +4,7 @@
 #include "database.h"
 #include "thread_pool.h"
 #include "winsock2.h"
+#include "util.h"
 #include <list>
 
 namespace MisakiDB {
@@ -15,6 +16,8 @@ public:
   void close(std::_List_iterator<DataBase> &database);
 
   void start();
+
+  SOCKET getServerSocket();
 
 protected:
   void serve(SOCKET clientSocket);

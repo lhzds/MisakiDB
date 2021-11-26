@@ -133,25 +133,26 @@ bool B_PLUS_TREE_LEAF_PAGE_TYPE::lookup(const KeyType &key, ValueType *value, co
  * First look through leaf page to see whether delete key exist or not. If
  * existed, perform deletion, otherwise return immediately.
  * NOTE: store key&value pair continuously after deletion
- * @return   page size after deletion
+ * @return   removed value
  */
 INDEX_TEMPLATE_ARGUMENTS
-int B_PLUS_TREE_LEAF_PAGE_TYPE::removeAndDeleteRecord(const KeyType &key, const KeyComparator &comparator) {
+std::optional<ValueType>
+B_PLUS_TREE_LEAF_PAGE_TYPE::removeAndDeleteRecord(const KeyType &key, const KeyComparator &comparator) {
   int i = 0;
-  for (; i < getSize() && comparator(keyAt(i), key) != 0; ++i) {
-  }
+  for (; i < getSize() && comparator(keyAt(i), key) != 0; ++i);
   
   // if key not exist, return immediately
   if (i == getSize()) {
-    return getSize();
+    return std::nullopt;
   }
   
+  ValueType removedValue = m_array[i].second;
   // delete key and its corresponding value
   for (; i < getSize(); ++i) {
     m_array[i] = m_array[i + 1];
   }
   increaseSize(-1);
-  return getSize();
+  return removedValue;
 }
 
 /*****************************************************************************

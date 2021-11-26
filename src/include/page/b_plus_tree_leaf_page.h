@@ -34,7 +34,7 @@ public:
   // insert and delete methods
   int insert(const KeyType &key, const ValueType &value, const KeyComparator &comparator);
   bool lookup(const KeyType &key, ValueType *value, const KeyComparator &comparator) const;
-  int removeAndDeleteRecord(const KeyType &key, const KeyComparator &comparator);
+  std::optional<ValueType> removeAndDeleteRecord(const KeyType &key, const KeyComparator &comparator);
   
   // Split and Merge utility methods
   void moveHalfTo(BPlusTreeLeafPage *recipient);

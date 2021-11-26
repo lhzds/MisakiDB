@@ -11,39 +11,47 @@ DataBase::DataBase(const std::string &databaseName, const Options &options)
       m_bPlusTree { &m_indexFileManager, GenericComparator<RECORD_KEY_SIZE> { } },
       m_dataAccessor { &m_dataFileManager } { }
 
-bool DataBase::get(std::string &key, std::string &value) {
+std::optional<std::string> DataBase::get(std::string &key) {
   processKey(key);
 
-  RecordIDType recordID { getRecordID(key) };
-  if (INVALID_RECORD_ID.recordID == recordID.recordID) return false;
+  // Get record id from b+ tree
+  auto result { this->m_bPlusTree.getValue(key) };
+  RecordIDType recordID;
+  if (result.has_value()) recordID = result.value();
+  else return std::nullopt;
 
-  value = getValue(recordID);
-  return true;
+  return m_dataAccessor.getRecordValue(key, recordID);
 }
 
 bool DataBase::remove(std::string &key) {
   processKey(key);
 
-  RecordIDType recordID { removeRecordID(key) };
-  if (INVALID_RECORD_ID.recordID == recordID.recordID) return false;
+  // Get record id from b+ tree
+  auto result { this->m_bPlusTree.remove(key) };
+  if (not result.has_value()) return false;
 
-  removeRecord(recordID);
+  // Remove it from the data file
+  this->m_dataAccessor.removeRecord(result.value());
+
   return true;
 }
 
 bool DataBase::exist(std::string &key) {
   processKey(key);
 
-  return getRecordID(key).recordID not_eq INVALID_RECORD_ID.recordID;
+  return this->m_bPlusTree.getValue(key).has_value();
 }
 
 void DataBase::set(std::string &key, const std::string &value) {
   processKey(key);
 
+  // Set = Remove + Insert
   remove(key);
 
-  RecordIDType recordID { addRecord(key, value) };
-  addRecordID(recordID);
+  RecordIDType recordID { this->m_dataAccessor.insertRecord(key, value) };
+  if (not this->m_bPlusTree.insert(key, recordID)) {
+    this->m_dataAccessor.removeRecord(recordID);
+  }
 }
 
 void DataBase::use() { ++this->m_inuse; }
@@ -55,31 +63,8 @@ uint64_t DataBase::inuse() const { return this->m_inuse; }
 std::string DataBase::getName() const { return this->m_databaseName; }
 
 void DataBase::processKey(std::string &key) {
+  trim(key);
   if (key.length() > RECORD_KEY_SIZE) key = key.substr(0, RECORD_KEY_SIZE);
   else key = key + std::string(RECORD_KEY_SIZE - key.length(), '\0');
-}
-
-RecordIDType DataBase::getRecordID(const std::string &key) const {
-
-}
-
-std::string DataBase::getValue(RecordIDType recordID) const {
-
-}
-
-RecordIDType DataBase::removeRecordID(const std::string &key) {
-
-}
-
-void DataBase::removeRecord(RecordIDType recordID) {
-
-}
-
-RecordIDType DataBase::addRecord(const std::string &key, const std::string &value) {
-
-}
-
-void DataBase::addRecordID(RecordIDType recordID) {
-
 }
 }

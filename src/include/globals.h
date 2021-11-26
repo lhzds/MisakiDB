@@ -25,7 +25,7 @@ constexpr BlobIDType INVALID_BLOB_ID {std::numeric_limits<BlobIDType>::max()};
 constexpr size_t RECORD_KEY_SIZE { 24 };
 
 constexpr size_t PAGE_SIZE { 4096 };
-constexpr size_t RECORD_KEY_SIZE { 24 };
+
 constexpr uint16_t SERVER_PORT { 8888 };
 
 enum class FileType {INVALID, INDEX, DATA, FREE_SPACE_MAP, BLOB};
