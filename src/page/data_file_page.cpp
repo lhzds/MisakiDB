@@ -52,13 +52,23 @@ void DataFilePage::setIsBlob(int slotArrayIndex, bool isBlob) {
 }
 
 std::string DataFilePage::getRecord_helper(int slotArrayIndex) const {
-  assert(0 <= slotArrayIndex && slotArrayIndex < getSlotsNum());
   return std::string(reinterpret_cast<const char *>(this) + getRecordOffset(slotArrayIndex),
                      getRecordLength(slotArrayIndex));
 }
 
-std::pair<std::string, bool> DataFilePage::getRecord(int slotArrayIndex) const {
-  return {getRecord_helper(slotArrayIndex), isBlob(slotArrayIndex) };
+std::optional<std::pair<std::string, bool>>
+DataFilePage::getRecordValue(const std::string &key, int slotArrayIndex) const {
+  assert(0 <= slotArrayIndex && slotArrayIndex < getSlotsNum());
+  if (getRecordOffset(slotArrayIndex) == INVALID_OFFSET) {
+    return std::nullopt;
+  }
+  std::string record = getRecord_helper(slotArrayIndex);
+  std::string_view recordKey(record.c_str(), key.size());
+  if (recordKey != key) {
+    return std::nullopt;
+  }
+  std::string_view recordValue(record.c_str() + key.size());
+  return std::make_pair(std::string(recordValue), isBlob(slotArrayIndex));
 }
 
 std::variant<RecordSizeType, std::string> DataFilePage::removeRecord(int slotArrayIndex) {

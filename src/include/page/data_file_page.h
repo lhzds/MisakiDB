@@ -1,6 +1,7 @@
 #pragma once
 #include "globals.h"
 #include <variant>
+#include <optional>
 
 namespace MisakiDB {
 class DataFilePage {
@@ -48,7 +49,7 @@ public:
   static constexpr RecordSizeType MAX_RECORD_SIZE { PAGE_SIZE - MIN_FIXED_SIZE - SLOT_SIZE };
   
   void init();
-  std::pair<std::string, bool> getRecord(int slotArrayNum) const;
+  std::optional<std::pair<std::string, bool>> getRecordValue(const std::string &key, int slotArrayNum) const;
   std::variant<RecordSizeType, std::string> removeRecord(int slotArrayIndex);
   RecordSizeType insertRecord(const std::string& record, bool isBlob);
 };

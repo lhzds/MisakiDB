@@ -7,23 +7,27 @@ namespace MisakiDB{
 DataAccessor::DataAccessor(DataFileManager *dataFileManager)
     :m_dataFileManager(dataFileManager) {}
 
-std::string DataAccessor::getData(RecordIDType recordID) const {
+std::optional<std::string> DataAccessor::getRecordValue(const std::string &key, RecordIDType recordID) const {
   PageIDType pageID { recordID.pageID };
   int slotArrayIndex { recordID.slotArrayIndex };
   
   Page *rawTargetPage = m_dataFileManager->fetchDataPage(pageID);
   rawTargetPage->rLatch();
   auto targetPage = reinterpret_cast<DataFilePage *>(rawTargetPage->getData());
-  auto [record, isBlob] = targetPage->getRecord(slotArrayIndex);
+  auto result = targetPage->getRecordValue(key, slotArrayIndex);
+  if (!result.has_value()) {
+    return std::nullopt;
+  }
+  const auto &[recordValue, isBlob] = result.value();
   rawTargetPage->rUnlatch();
   m_dataFileManager->unpinDataPage(pageID, false);
   if (isBlob) {
-    return getBlob(record);
+    return getBlob(recordValue);
   }
-  return record;
+  return recordValue;
 }
 
-void DataAccessor::removeData(RecordIDType recordID) {
+void DataAccessor::removeRecord(RecordIDType recordID) {
   PageIDType pageID { recordID.pageID };
   int slotArrayIndex { recordID.slotArrayIndex };
   
@@ -33,7 +37,8 @@ void DataAccessor::removeData(RecordIDType recordID) {
   auto removeResult = targetPage->removeRecord(slotArrayIndex);
   rawTargetPage->wUnlatch();
   m_dataFileManager->unpinDataPage(pageID, true);
-  if (removeResult.index() == 0) {
+  
+  if (removeResult.index() == 0) { // if the record is slob
     m_dataFileManager->addFreeSpace(pageID, std::get<RecordSizeType>(removeResult));
   } else {
     std::string blobFirstPageID = std::move(std::get<std::string>(removeResult));
@@ -42,9 +47,11 @@ void DataAccessor::removeData(RecordIDType recordID) {
   }
 }
 
-RecordIDType DataAccessor::insertData(const std::string &value) {
+// key.size() must be 24
+RecordIDType DataAccessor::insertRecord(const std::string &key, const std::string &value) {
   Page *rawTargetPage;
   int slotArrayIndex;
+  std::string record;
   if (DataFilePage::MAX_RECORD_SIZE < value.size()) { // if value is blob
     std::string blobFirstPageID = insertBlob(value);
     rawTargetPage = m_dataFileManager->allocateDataPage(blobFirstPageID.size());
@@ -52,10 +59,11 @@ RecordIDType DataAccessor::insertData(const std::string &value) {
     auto targetPage = reinterpret_cast<DataFilePage *>(rawTargetPage->getData());
     slotArrayIndex = targetPage->insertRecord(blobFirstPageID, true);
   } else {
-    rawTargetPage = m_dataFileManager->allocateDataPage(value.size());
+    record = key + value;
+    rawTargetPage = m_dataFileManager->allocateDataPage(record.size());
     rawTargetPage->wLatch();
     auto targetPage = reinterpret_cast<DataFilePage *>(rawTargetPage->getData());
-    slotArrayIndex = targetPage->insertRecord(value, false);
+    slotArrayIndex = targetPage->insertRecord(record, false);
   }
   
   RecordIDType newRecordID;
@@ -89,11 +97,11 @@ std::string DataAccessor::insertBlob(const std::string &value) {
     prevPage = rawNewBlobPage;
   }
   m_dataFileManager->unpinBlobPage(prevPage->getPageID(), true);
-  return std::to_string(firstPageID);
+  return std::string(reinterpret_cast<const char *>(&firstPageID), sizeof(firstPageID));
 }
 
 std::string DataAccessor::getBlob(const std::string &blobFirstPageID) const {
-  PageIDType nextBlobPageID = std::stoul(blobFirstPageID);
+  PageIDType nextBlobPageID = *reinterpret_cast<const PageIDType *>(blobFirstPageID.c_str());
   std::string blob;
   while (nextBlobPageID != INVALID_PAGE_ID) {
     Page *rawBlobPage = m_dataFileManager->fetchBlobPage(nextBlobPageID);
@@ -108,7 +116,7 @@ std::string DataAccessor::getBlob(const std::string &blobFirstPageID) const {
 }
 
 void DataAccessor::removeBlob(const std::string &blobFirstPageID) {
-  PageIDType nextBlobPageID = std::stoul(blobFirstPageID);
+  PageIDType nextBlobPageID = *reinterpret_cast<const PageIDType *>(blobFirstPageID.c_str());
   while (nextBlobPageID != INVALID_PAGE_ID) {
     Page *rawBlobPage = m_dataFileManager->fetchBlobPage(nextBlobPageID);
     rawBlobPage->rLatch();
