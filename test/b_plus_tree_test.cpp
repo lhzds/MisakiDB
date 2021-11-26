@@ -39,7 +39,6 @@ TEST_F(BPlusTreeTest, BPlusTreeTest1) {
   size_t totalKeys = 1000;
   for (size_t i = 1; i <= totalKeys; i++) {
     std::string str = std::to_string(i);
-    // str += std::string(24 - str.length(), '0');
     
     if (i % sieve == 0) {
       forInsert.emplace_back(str);

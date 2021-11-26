@@ -107,13 +107,16 @@ Page *DataFileManager::newBlobPage() {
   Page *rawNewPage;
   if (header->getFreePageListHeader() == INVALID_PAGE_ID) {
     rawNewPage = m_dataBufferPoolManager->appendNewBlobPage(header->getNextPageID());
+    rawNewPage->wLatch();
     header->incNextPageID();
   } else {
     rawNewPage = m_dataBufferPoolManager->fetchBlobPage(header->getFreePageListHeader());
+    rawNewPage->wLatch();
     auto newPage = reinterpret_cast<BlobFileFreePage *>(rawNewPage->getData());
     header->setFreePageListHeader(newPage->getNextFreePageID());
   }
   reinterpret_cast<BlobFilePage *>(rawNewPage->getData())->init();
+  rawNewPage->wUnlatch();
   rawHeader->wUnlatch();
   m_dataBufferPoolManager->unpinBlobPage(0, true);
   return rawNewPage;
@@ -130,12 +133,6 @@ bool DataFileManager::deleteBlobPage(PageIDType pageID) {
   }
   
   Page *rawFreePage = m_dataBufferPoolManager->fetchBlobPage(pageID);
-  if (rawFreePage->getPinCount() != 1) {
-    rawHeader->wUnlatch();
-    m_dataBufferPoolManager->unpinBlobPage(0, false);
-    m_dataBufferPoolManager->unpinBlobPage(pageID, false);
-    return false;
-  }
   rawFreePage->wLatch();
   
   auto freePage = reinterpret_cast<BlobFileFreePage *>(rawFreePage->getData());

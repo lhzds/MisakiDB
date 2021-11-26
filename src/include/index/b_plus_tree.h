@@ -32,7 +32,7 @@ public:
   bool insert(const KeyType &key, const ValueType &value);
   
   // Remove a key and its value from this B+ tree.
-  void remove(const KeyType &key);
+  bool remove(const KeyType &key);
   
   // return the value associated with a given key
   bool getValue(const KeyType &key, std::vector<ValueType> *result);

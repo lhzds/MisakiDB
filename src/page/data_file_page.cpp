@@ -51,24 +51,37 @@ void DataFilePage::setIsBlob(int slotArrayIndex, bool isBlob) {
   getSlotArray()[slotArrayIndex].m_isBlob = isBlob;
 }
 
-std::string DataFilePage::getRecord_helper(int slotArrayIndex) const {
-  assert(0 <= slotArrayIndex && slotArrayIndex < getSlotsNum());
+std::string DataFilePage::getRecordKey_helper(int slotArrayIndex) const {
   return std::string(reinterpret_cast<const char *>(this) + getRecordOffset(slotArrayIndex),
-                     getRecordLength(slotArrayIndex));
+                     RECORD_KEY_SIZE);
 }
 
-std::pair<std::string, bool> DataFilePage::getRecord(int slotArrayIndex) const {
-  return {getRecord_helper(slotArrayIndex), isBlob(slotArrayIndex) };
+std::string DataFilePage::getRecordValue_helper(int slotArrayIndex) const {
+  return std::string(reinterpret_cast<const char *>(this) + getRecordOffset(slotArrayIndex) + RECORD_KEY_SIZE,
+                     getRecordLength(slotArrayIndex) - RECORD_KEY_SIZE);
+}
+
+std::optional<std::pair<std::string, bool>>
+DataFilePage::getRecordValue(const std::string &key, int slotArrayIndex) const {
+  assert(0 <= slotArrayIndex && slotArrayIndex < getSlotsNum());
+  if (getRecordOffset(slotArrayIndex) == INVALID_OFFSET) {
+    return std::nullopt;
+  }
+  if (getRecordKey_helper(slotArrayIndex) != key) {
+    return std::nullopt;
+  }
+
+  return std::make_pair(getRecordValue_helper(slotArrayIndex), isBlob(slotArrayIndex));
 }
 
 std::variant<RecordSizeType, std::string> DataFilePage::removeRecord(int slotArrayIndex) {
   assert(0 <= slotArrayIndex && slotArrayIndex < getSlotsNum());
   assert(getRecordOffset(slotArrayIndex) != INVALID_OFFSET);
   
-  std::string record;
+  std::string recordValue;
   bool isBlob = this->isBlob(slotArrayIndex);
   if (isBlob) {
-    record = getRecord_helper(slotArrayIndex);
+    recordValue = getRecordValue_helper(slotArrayIndex);
   }
   RecordSizeType recordLength = getRecordLength(slotArrayIndex);
   char *records = getRecords();
@@ -76,7 +89,7 @@ std::variant<RecordSizeType, std::string> DataFilePage::removeRecord(int slotArr
   RecordSizeType movedSize = getRecordOffset(slotArrayIndex) - m_freeSpaceEndOffset;
   for (int i = 0; i < getSlotsNum(); ++i) {
     auto offset = getRecordOffset(i);
-    if (offset != INVALID_OFFSET && m_freeSpaceEndOffset <= offset < m_freeSpaceEndOffset + movedSize) {
+    if (offset != INVALID_OFFSET && m_freeSpaceEndOffset <= offset && offset < m_freeSpaceEndOffset + movedSize) {
       setRecordOffset(i, offset + recordLength);
     }
   }
@@ -86,7 +99,7 @@ std::variant<RecordSizeType, std::string> DataFilePage::removeRecord(int slotArr
   --m_recordNum;
   ++m_invalidSlotNum;
   if (isBlob) {
-    return record;
+    return recordValue;
   } else {
     return recordLength;
   }
