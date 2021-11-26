@@ -29,14 +29,13 @@ TEST_F(DataAccessorTest, slobTest) {
   DataFileManager *dfm { new DataFileManager(dbpm) };
   DataAccessor *da { new DataAccessor(dfm) };
   
-  const int recordKeySize = 24;
-  const int recordValueSize = 100 - DataFilePage::SLOT_SIZE - recordKeySize;
+  const int recordValueSize = 100 - DataFilePage::SLOT_SIZE - RECORD_KEY_SIZE;
   const int recordNumPerPage = (PAGE_SIZE - DataFilePage::MIN_FIXED_SIZE) / 100;
   // insert
   for (int i = 1; i <= 10; ++i) {
     for (int j = 0; j < recordNumPerPage; ++j) {
       std::string key = std::to_string(i * 10000 + j);
-      key += std::string(recordKeySize - key.length(), key.at(0));
+      key += std::string(RECORD_KEY_SIZE - key.length(), key.at(0));
       
       std::string value = std::to_string(j);
       value += std::string(recordValueSize - value.length(), value.at(0));
@@ -50,7 +49,7 @@ TEST_F(DataAccessorTest, slobTest) {
   for (int i = 1; i <= 10; ++i) {
     for (int j = 0; j < recordNumPerPage; ++j) {
       std::string key = std::to_string(i * 10000 + j);
-      key += std::string(recordKeySize - key.length(), key.at(0));
+      key += std::string(RECORD_KEY_SIZE - key.length(), key.at(0));
   
       std::string value = std::to_string(j);
       value += std::string(recordValueSize - value.length(), value.at(0));
@@ -83,7 +82,7 @@ TEST_F(DataAccessorTest, slobTest) {
         continue;
       }
       std::string key = std::to_string(i * 10000 + j);
-      key += std::string(recordKeySize - key.length(), key.at(0));
+      key += std::string(RECORD_KEY_SIZE - key.length(), key.at(0));
   
       std::string value = std::to_string(j);
       value += std::string(recordValueSize - value.length(), value.at(0));
@@ -99,43 +98,49 @@ TEST_F(DataAccessorTest, slobTest) {
   delete dbpm;
 }
 
-//TEST_F(DataAccessorTest, blobTest) {
-//  DataBufferPoolManager *dbpm { new DataBufferPoolManager(30, fileStore) };
-//  DataFileManager *dfm { new DataFileManager(dbpm) };
-//  DataAccessor *da { new DataAccessor(dfm) };
-//
-//  size_t blobMinSize = DataFilePage::MAX_RECORD_SIZE + 1;
-//
-//  std::vector<RecordIDType> inserteds;
-//  for (int i = 0; i < 10; ++i) {
-//    std::string record;
-//    for (int j = 0; j <= i; ++j) {
-//      record.append(std::string(blobMinSize / 2, 'a' + j));
-//      record.append(std::string(blobMinSize - blobMinSize / 2, 'a' + j - 1));
-//    }
-//    inserteds.emplace_back(da->insertData(record));
-//  }
-//
-//  int sieve = 2;
-//  for (int i = 0; i < 10; ++i) {
-//    if (i % sieve == 0) {
-//      da->removeData(inserteds[i]);
-//    }
-//  }
-//
-//  for (int i = 0; i < 10; ++i) {
-//    if (i % sieve != 0) {
-//      std::string record;
-//      for (int j = 0; j <= i; ++j) {
-//        record.append(std::string(blobMinSize / 2, 'a' + j));
-//        record.append(std::string(blobMinSize - blobMinSize / 2, 'a' + j - 1));
-//      }
-//      ASSERT_EQ(record, da->getData(inserteds[i]));
-//    }
-//  }
-//
-//  delete da;
-//  delete dfm;
-//  delete dbpm;
-//}
+TEST_F(DataAccessorTest, blobTest) {
+  DataBufferPoolManager *dbpm { new DataBufferPoolManager(30, fileStore) };
+  DataFileManager *dfm { new DataFileManager(dbpm) };
+  DataAccessor *da { new DataAccessor(dfm) };
+
+  size_t blobMinSize = DataFilePage::MAX_RECORD_SIZE + 1;
+
+  std::vector<RecordIDType> inserteds;
+  for (int i = 0; i < 10; ++i) {
+    std::string key = std::to_string(i);
+    key += std::string(RECORD_KEY_SIZE - key.length(), key.at(0));
+    std::string value;
+    for (int j = 0; j <= i; ++j) {
+      value.append(std::string(blobMinSize / 2, 'a' + j));
+      value.append(std::string(blobMinSize - blobMinSize / 2, 'a' + j - 1));
+    }
+    inserteds.emplace_back(da->insertRecord(key, value));
+  }
+
+  int sieve = 2;
+  for (int i = 0; i < 10; ++i) {
+    if (i % sieve == 0) {
+      da->removeRecord(inserteds[i]);
+    }
+  }
+
+  for (int i = 0; i < 10; ++i) {
+    if (i % sieve != 0) {
+      std::string key = std::to_string(i);
+      key += std::string(RECORD_KEY_SIZE - key.length(), key.at(0));
+      std::string value;
+      for (int j = 0; j <= i; ++j) {
+        value.append(std::string(blobMinSize / 2, 'a' + j));
+        value.append(std::string(blobMinSize - blobMinSize / 2, 'a' + j - 1));
+      }
+      auto result = da->getRecordValue(key, inserteds[i]);
+      ASSERT_TRUE(result.has_value());
+      ASSERT_EQ(value, *result);
+    }
+  }
+
+  delete da;
+  delete dfm;
+  delete dbpm;
+}
 }

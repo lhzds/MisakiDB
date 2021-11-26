@@ -217,6 +217,6 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::copyFirstFrom(const MappingType &item) {
   increaseSize(1);
 }
 
-template class BPlusTreeLeafPage<GenericKey<24>, RecordIDType, GenericComparator<24>>;
+template class BPlusTreeLeafPage<GenericKey<RECORD_KEY_SIZE>, RecordIDType, GenericComparator<RECORD_KEY_SIZE>>;
 }
 

@@ -58,7 +58,6 @@ bool BPLUSTREE_TYPE::getValue(const KeyType &key, std::vector<ValueType> *result
  */
 INDEX_TEMPLATE_ARGUMENTS
 bool BPLUSTREE_TYPE::insert(const KeyType &key, const ValueType &value) {
-  // LOG_DEBUG("start insert key: %ld", key.ToString());
   if (isEmpty()) {
     startNewTree(key, value);
     return true;
@@ -216,24 +215,33 @@ void BPLUSTREE_TYPE::insertIntoParent(BPlusTreePage *oldNode, const KeyType &key
  * If not, User needs to first find the right leaf page as deletion target, then
  * delete entry from leaf page. Remember to deal with redistribute or merge if
  * necessary.
+ * @return: return false if the key to be deleted does not exist,
+ * otherwise return true.
  */
 INDEX_TEMPLATE_ARGUMENTS
-void BPLUSTREE_TYPE::remove(const KeyType &key) {
+bool BPLUSTREE_TYPE::remove(const KeyType &key) {
   if (isEmpty()) {
     return;
   }
   
   auto leafPtr = reinterpret_cast<LeafPage *>(findLeafPage(key, false)->getData());
+  auto oldSize = leafPtr->getSize();
   leafPtr->removeAndDeleteRecord(key, m_comparator);
+  auto newSize = leafPtr->getSize();
+  if (oldSize == newSize) {
+    m_indexFileManager->unpinIndexPage(leafPtr->getPageID(), false);
+    return false;
+  }
   
   bool needDelete = false;
-  if (leafPtr->getSize() < leafPtr->getMinSize()) {
+  if (newSize < leafPtr->getMinSize()) {
     needDelete = coalesceOrRedistribute(leafPtr);
   }
   m_indexFileManager->unpinIndexPage(leafPtr->getPageID(), true);
   if (needDelete) {
     m_indexFileManager->deleteIndexPage(leafPtr->getPageID());
   }
+  return true;
 }
 
 /*
@@ -495,5 +503,5 @@ void BPLUSTREE_TYPE::updateRootPageID() {
   m_indexFileManager->unpinIndexPage(0, true);
 }
 
-template class BPlusTree<GenericKey<24>, RecordIDType, GenericComparator<24>>;
+template class BPlusTree<GenericKey<RECORD_KEY_SIZE>, RecordIDType, GenericComparator<RECORD_KEY_SIZE>>;
 }

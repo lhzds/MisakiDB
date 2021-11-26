@@ -6,12 +6,18 @@ class GenericKey {
 public:
   GenericKey() = default;
   GenericKey(const std::string &data) {
-    strcpy_s(m_data, KeySize, data.c_str());
+    assert(data.size() <= KeySize);
+    memcpy(m_data, data.c_str(), data.size());
   }
-  GenericKey(const char *data) {
-    strcpy_s(m_data, KeySize, data);
-  };
+  
+  void setData(const std::string &data) {
+    assert(data.size() <= KeySize);
+    memcpy(m_data, data.c_str(), data.size());
+    memset(m_data + data.size(), 0, KeySize - data.size());
+  }
+  
   const char *getData() const { return m_data; };
+  std::string toStr() const { return std::string(m_data, KeySize); }
   
 private:
   char m_data[KeySize]{};

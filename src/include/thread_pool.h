@@ -4,7 +4,7 @@ namespace MisakiDB {
 class ThreadPool final
 {
 public:
-  ThreadPool(size_t poolSize);
+  explicit ThreadPool(size_t poolSize);
   ~ThreadPool();
 
   // Delete the ctor and copy assignment operator

@@ -265,5 +265,5 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::copyFirstFrom(const MappingType &pair, Inde
   indexFileManager->unpinIndexPage(bpTreePgPtr->getPageID(), true);
 }
 
-template class BPlusTreeInternalPage<GenericKey<24>, PageIDType, GenericComparator<24>>;
+template class BPlusTreeInternalPage<GenericKey<RECORD_KEY_SIZE>, PageIDType, GenericComparator<RECORD_KEY_SIZE>>;
 }

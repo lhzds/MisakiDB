@@ -24,13 +24,13 @@ private:
   
   /* Get the total number of slots in the slot array. */
   inline int getSlotsNum() const;
-  /* Get start addr of the slot array. */
+  /* Get start address of the slot array. */
   inline Slot *getSlotArray();
-  /* Get start addr of the slot array.(for const) */
+  /* Get start address of the slot array.(for const) */
   inline const Slot *getSlotArray() const;
-  /* Get the start addr of records. */
+  /* Get the start address of records. */
   inline char *getRecords();
-  /* Get the start addr of records. (for const)*/
+  /* Get the start address of records. (for const)*/
   inline const char *getRecords() const;
   
   inline RecordSizeType getRecordOffset(int slotArrayIndex) const;
@@ -40,8 +40,9 @@ private:
   inline void setRecordLength(int slotArrayIndex, RecordSizeType length);
   inline void setIsBlob(int slotArrayIndex, bool isBlob);
   
-  inline std::string getRecord_helper(int slotArrayIndex) const;
-
+  inline std::string getRecordKey_helper(int slotArrayIndex) const;
+  inline std::string getRecordValue_helper(int slotArrayIndex) const;
+  
 public:
   static constexpr size_t SLOT_SIZE { sizeof(Slot) };
   static constexpr size_t MIN_FIXED_SIZE { sizeof(m_recordNum) + sizeof(m_invalidSlotNum)
