@@ -116,6 +116,7 @@ std::string DataAccessor::insertBlob(const std::string &key, const std::string &
   m_dataFileManager->unpinBlobPage(prevPage->getPageID(), true);
   
   Page *rawBlobHeadPage = m_dataFileManager->fetchBlobPage(firstPageID);
+  rawBlobHeadPage->wLatch();
   auto blobHeadPage = reinterpret_cast<BlobFilePage *>
       (rawBlobHeadPage->getData());
   blobHeadPage->setIsBlobListHead(true);
@@ -151,7 +152,6 @@ DataAccessor::getBlob(const std::string& key, const std::string &blobFirstPageID
       }
 
       auto blobHeadPage = reinterpret_cast<BlobHeadPage *>(blobPage);
-      auto forTest = blobHeadPage->getKey();
       if (blobHeadPage->getKey() != key) {
         rawBlobPage->rUnlatch();
         m_dataFileManager->unpinBlobPage(rawBlobPage->getPageID(), false);

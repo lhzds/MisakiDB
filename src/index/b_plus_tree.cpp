@@ -221,7 +221,7 @@ void BPLUSTREE_TYPE::insertIntoParent(BPlusTreePage *oldNode, const KeyType &key
 INDEX_TEMPLATE_ARGUMENTS
 bool BPLUSTREE_TYPE::remove(const KeyType &key) {
   if (isEmpty()) {
-    return;
+    return false;
   }
   
   auto leafPtr = reinterpret_cast<LeafPage *>(findLeafPage(key, false)->getData());

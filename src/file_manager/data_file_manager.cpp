@@ -133,12 +133,6 @@ bool DataFileManager::deleteBlobPage(PageIDType pageID) {
   }
   
   Page *rawFreePage = m_dataBufferPoolManager->fetchBlobPage(pageID);
-  if (rawFreePage->getPinCount() != 1) {
-    rawHeader->wUnlatch();
-    m_dataBufferPoolManager->unpinBlobPage(0, false);
-    m_dataBufferPoolManager->unpinBlobPage(pageID, false);
-    return false;
-  }
   rawFreePage->wLatch();
   
   auto freePage = reinterpret_cast<BlobFileFreePage *>(rawFreePage->getData());
