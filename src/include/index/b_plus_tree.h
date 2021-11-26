@@ -28,9 +28,6 @@ public:
   explicit BPlusTree(IndexFileManager *indexFileManager, const KeyComparator &comparator,
                      int leafMaxSize = LEAF_PAGE_SIZE, int internalMaxSize = INTERNAL_PAGE_SIZE);
   
-  // Returns true if this B+ tree has no keys and values.
-  bool isEmpty() const;
-  
   // insert a key-value pair into this B+ tree.
   bool insert(const KeyType &key, const ValueType &value);
   
@@ -69,6 +66,9 @@ private:
   bool adjustRoot(BPlusTreePage *node);
   
   void updateRootPageID();
+
+  // Returns true if this B+ tree has no keys and values.
+  bool isEmpty();
   
   // member variable
   PageIDType m_rootPageID;
@@ -76,6 +76,7 @@ private:
   KeyComparator m_comparator;
   int m_leafMaxSize;
   int m_internalMaxSize;
+  std::shared_mutex m_treeRWLatch;
 };
 
 }

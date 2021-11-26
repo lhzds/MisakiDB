@@ -2,11 +2,6 @@ cmake_minimum_required(VERSION 3.21)
 project(MisakiDB)
 
 set(CMAKE_CXX_STANDARD 20)
-#file(GLOB SOURCES
-#        "src/*.cpp"
-#        "src/file_store/*.cpp"
-#        "src/page/*.cpp"
-#        "src/buffer/*.cpp")
 #set(SOURCES "src/file_store/file_store.cpp"
 #        "src/page/index_file_header.cpp"
 #        "src/page/free_space_map_file_header.cpp"

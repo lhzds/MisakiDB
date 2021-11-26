@@ -146,7 +146,7 @@ void Server::serve(SOCKET clientSocket) {
 
     else if ("GET" == operation) {
       // Slice out the key
-      KeyType key { message.substr(index) };
+      std::string key { message.substr(index) };
 
       // Perform get operation
       if (database->get(key, message)) message = "GET FAILED: KEY DOES NOT EXIST\n";
@@ -165,7 +165,7 @@ void Server::serve(SOCKET clientSocket) {
       while (nextIndex < message.length() - 1 and message.at(++nextIndex) != ' ');
 
       // Slice out the key
-      KeyType key { message.substr(index, nextIndex++ - index) };
+      std::string key { message.substr(index, nextIndex++ - index) };
 
       // Slice out the value
       std::string value { message.substr(nextIndex) };
@@ -179,7 +179,7 @@ void Server::serve(SOCKET clientSocket) {
 
     else if ("DELETE" == operation) {
       // Slice out the key
-      KeyType key { message.substr(index) };
+      std::string key { message.substr(index) };
 
       // Perform delete operation
       if (database->remove(key)) message = "DELETE SUCCESSFUL\n";
@@ -191,7 +191,7 @@ void Server::serve(SOCKET clientSocket) {
 
     else if ("EXIST" == operation) {
       // Slice out the key
-      KeyType key { message.substr(index) };
+      std::string key { message.substr(index) };
 
       // Perform exist operation
       if (database->exist(key)) message = "EXIST\n";

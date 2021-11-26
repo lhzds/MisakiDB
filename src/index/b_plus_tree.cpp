@@ -17,7 +17,7 @@ BPLUSTREE_TYPE::BPlusTree(IndexFileManager *indexFileManager, const KeyComparato
  * Helper function to decide whether current b+tree is empty
  */
 INDEX_TEMPLATE_ARGUMENTS
-bool BPLUSTREE_TYPE::isEmpty() const {
+bool BPLUSTREE_TYPE::isEmpty() {
   return m_rootPageID == INVALID_PAGE_ID;
 }
 
@@ -31,6 +31,8 @@ bool BPLUSTREE_TYPE::isEmpty() const {
  */
 INDEX_TEMPLATE_ARGUMENTS
 bool BPLUSTREE_TYPE::getValue(const KeyType &key, std::vector<ValueType> *result) {
+  std::shared_lock<std::shared_mutex> latch { m_treeRWLatch };
+
   if (isEmpty()) {
     return false;
   }
@@ -58,7 +60,7 @@ bool BPLUSTREE_TYPE::getValue(const KeyType &key, std::vector<ValueType> *result
  */
 INDEX_TEMPLATE_ARGUMENTS
 bool BPLUSTREE_TYPE::insert(const KeyType &key, const ValueType &value) {
-  // LOG_DEBUG("start insert key: %ld", key.ToString());
+  std::unique_lock<std::shared_mutex> latch { m_treeRWLatch };
   if (isEmpty()) {
     startNewTree(key, value);
     return true;
@@ -219,6 +221,7 @@ void BPLUSTREE_TYPE::insertIntoParent(BPlusTreePage *oldNode, const KeyType &key
  */
 INDEX_TEMPLATE_ARGUMENTS
 void BPLUSTREE_TYPE::remove(const KeyType &key) {
+  std::unique_lock<std::shared_mutex> latch { m_treeRWLatch };
   if (isEmpty()) {
     return;
   }

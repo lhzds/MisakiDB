@@ -22,7 +22,7 @@ constexpr RecordIDType INVALID_RECORD_ID { std::numeric_limits<uint64_t>::max() 
 constexpr PageIDType INVALID_PAGE_ID { std::numeric_limits<uint32_t>::max() };
 
 constexpr size_t PAGE_SIZE { 4096 };
-
+constexpr size_t RECORD_KEY_SIZE { 24 };
 constexpr uint16_t SERVER_PORT { 8888 };
 
 enum class FileType {INVALID, INDEX, DATA, FREE_SPACE_MAP, BLOB};
