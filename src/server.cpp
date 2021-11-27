@@ -1,7 +1,7 @@
 #include "server.h"
 
 namespace MisakiDB{
-Server::Server() : m_threadPool { 4 } {
+Server::Server() : m_threadPool { WORKER_THREADS_NUMBER } {
   // Initialize DLL
   WSADATA wsdata;
   if (0 != WSAStartup(MAKEWORD(2, 2), &wsdata)) throw "WSAStartup Error";

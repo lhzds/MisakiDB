@@ -1,9 +1,10 @@
 #include "server.h"
 
 namespace MisakiDB {
-uint16_t SERVER_PORT;
-uint16_t INDEX_BUFFER_POOL_SIZE;
-uint16_t DATA_BUFFER_POOL_SIZE;
+uint32_t SERVER_PORT;
+size_t WORKER_THREADS_NUMBER;
+size_t INDEX_BUFFER_POOL_SIZE;
+size_t DATA_BUFFER_POOL_SIZE;
 }
 
 // Clean up finish event
@@ -46,10 +47,14 @@ int main() {
   if (not std::ifstream { "MisakiDB.ini" }.is_open()) {
     // Create a new option file
     WritePrivateProfileString("Options", "server-port", "6666", ".\\MisakiDB.ini");
+    WritePrivateProfileString("Options", "worker-threads-number",
+      std::to_string(std::thread::hardware_concurrency()).c_str(), ".\\MisakiDB.ini");
     WritePrivateProfileString("Options", "index-buffer-pool-size", "100", ".\\MisakiDB.ini");
     WritePrivateProfileString("Options", "data-buffer-pool-size", "100", ".\\MisakiDB.ini");
   }
   MisakiDB::SERVER_PORT = GetPrivateProfileInt("Options", "server-port", 6666, ".\\MisakiDB.ini");
+  MisakiDB::WORKER_THREADS_NUMBER = GetPrivateProfileInt("Options", "worker-threads-number",
+      std::thread::hardware_concurrency(), ".\\MisakiDB.ini");
   MisakiDB::INDEX_BUFFER_POOL_SIZE =
       GetPrivateProfileInt("Options", "index-buffer-pool-size", 100, ".\\MisakiDB.ini");
   MisakiDB::DATA_BUFFER_POOL_SIZE =
@@ -58,9 +63,16 @@ int main() {
   // Print Banner Information
   std::string banner {
 R"(Misaki DataBase - Super fast key-value storage database with enhanced Mikoto Protocal
-Powered by Misaki Team, SCNU. Copyright 2021, All Rights Reserved.
 
-Server has been started on port )" + std::to_string(MisakiDB::SERVER_PORT) };
+[Database Options]
+ServerPort: )" + std::to_string(MisakiDB::SERVER_PORT) + R"(
+WorkerThreadsNumber: )" + std::to_string(MisakiDB::WORKER_THREADS_NUMBER) + R"(
+IndexBufferPoolSize: )" + std::to_string(MisakiDB::INDEX_BUFFER_POOL_SIZE) + R"(
+DataBufferPoolSizr: )" + std::to_string(MisakiDB::DATA_BUFFER_POOL_SIZE) + R"(
+
+Server has been successfully started.
+
+Powered by Misaki Team, SCNU. Copyright 2021, All Rights Reserved.)" };
   std::cout << banner;
 
   // Start the server to serve
