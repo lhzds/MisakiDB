@@ -28,7 +28,7 @@ Server::~Server() {
   WSACleanup();
 }
 
-auto Server::open(const std::string &databaseName, const Options &options) {
+auto Server::open(const std::string &databaseName) {
   // Lock
   std::unique_lock<std::mutex> lock { this->m_databasesMutex };
 
@@ -39,7 +39,7 @@ auto Server::open(const std::string &databaseName, const Options &options) {
 
   // If the database does not opened, open it
   if (database == end(this->m_databases)) {
-    this->m_databases.emplace_back(databaseName, options);
+    this->m_databases.emplace_back(databaseName);
     database = --end(this->m_databases);
   }
 
@@ -119,7 +119,7 @@ void Server::serve(SOCKET clientSocket) {
         std::string databaseName { trim_copy(message.substr(index)) };
 
         // Perform open operation
-        database = open(databaseName, Options { });
+        database = open(databaseName);
 
         // Reply message
         send(clientSocket, "OPEN SUCCESSFUL\n", 16, 0);
@@ -138,7 +138,7 @@ void Server::serve(SOCKET clientSocket) {
       std::string databaseName { trim_copy(message.substr(index)) };
 
       // Perform open operation
-      database = open(databaseName, Options { });
+      database = open(databaseName);
 
       send(clientSocket, "OPEN SUCCESSFUL\n", 16, 0);
     }

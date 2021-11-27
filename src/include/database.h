@@ -1,6 +1,5 @@
 #pragma once
 #include "globals.h"
-#include "options.h"
 #include "generic_key.h"
 #include "index/b_plus_tree.h"
 #include "data_accessor.h"
@@ -15,7 +14,7 @@ using BPlusTreeIndex = BPlusTree<GenericKey<RECORD_KEY_SIZE>, RecordIDType,
 class DataBase
 {
 public:
-  DataBase(const std::string &databaseName, const Options &options);
+  DataBase(const std::string &databaseName);
   std::optional<std::string> get(std::string &key);
   bool remove(std::string &key);
   bool exist(std::string &key);

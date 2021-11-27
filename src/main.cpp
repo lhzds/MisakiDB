@@ -1,5 +1,11 @@
 #include "server.h"
 
+namespace MisakiDB {
+uint16_t SERVER_PORT;
+uint16_t INDEX_BUFFER_POOL_SIZE;
+uint16_t DATA_BUFFER_POOL_SIZE;
+}
+
 // Clean up finish event
 HANDLE FINISH_EVENT { CreateEvent(NULL, TRUE, FALSE, NULL) };
 // Server socket
@@ -35,6 +41,27 @@ void StartServer() {
 int main() {
   // Setup quit callback function
   SetConsoleCtrlHandler((PHANDLER_ROUTINE)ConsoleHandler, TRUE);
+
+  // Read database options from file
+  if (not std::ifstream { "MisakiDB.ini" }.is_open()) {
+    // Create a new option file
+    WritePrivateProfileString("Options", "server-port", "6666", ".\\MisakiDB.ini");
+    WritePrivateProfileString("Options", "index-buffer-pool-size", "100", ".\\MisakiDB.ini");
+    WritePrivateProfileString("Options", "data-buffer-pool-size", "100", ".\\MisakiDB.ini");
+  }
+  MisakiDB::SERVER_PORT = GetPrivateProfileInt("Options", "server-port", 6666, ".\\MisakiDB.ini");
+  MisakiDB::INDEX_BUFFER_POOL_SIZE =
+      GetPrivateProfileInt("Options", "index-buffer-pool-size", 100, ".\\MisakiDB.ini");
+  MisakiDB::DATA_BUFFER_POOL_SIZE =
+      GetPrivateProfileInt("Options", "data-buffer-pool-size", 100, ".\\MisakiDB.ini");
+
+  // Print Banner Information
+  std::string banner {
+R"(Misaki DataBase - Super fast key-value storage database with enhanced Mikoto Protocal
+Powered by Misaki Team, SCNU. Copyright 2021, All Rights Reserved.
+
+Server has been started on port )" + std::to_string(MisakiDB::SERVER_PORT) };
+  std::cout << banner;
 
   // Start the server to serve
   // When the quit event triggers, the deconstructor will do the cleaning job

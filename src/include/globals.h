@@ -26,7 +26,11 @@ constexpr size_t RECORD_KEY_SIZE { 24 };
 
 constexpr size_t PAGE_SIZE { 4096 };
 
-constexpr uint16_t SERVER_PORT { 8888 };
+extern uint16_t SERVER_PORT;
+
+extern uint16_t INDEX_BUFFER_POOL_SIZE;
+
+extern uint16_t DATA_BUFFER_POOL_SIZE;
 
 enum class FileType {INVALID, INDEX, DATA, FREE_SPACE_MAP, BLOB};
 }

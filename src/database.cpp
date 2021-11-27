@@ -1,11 +1,10 @@
 #include "database.h"
 
 namespace MisakiDB{
-DataBase::DataBase(const std::string &databaseName, const Options &options)
-    :m_databaseName { databaseName },
-      m_fileStore { databaseName },
-      m_indexBufferPoolManager { options.getIndexBufferPoolSize(), &m_fileStore },
-      m_dataBufferPoolManager { options.getDataBufferPoolSize(), &m_fileStore },
+DataBase::DataBase(const std::string &databaseName)
+    :m_databaseName { databaseName }, m_fileStore { databaseName },
+      m_indexBufferPoolManager { INDEX_BUFFER_POOL_SIZE, &m_fileStore },
+      m_dataBufferPoolManager { DATA_BUFFER_POOL_SIZE, &m_fileStore },
       m_indexFileManager { &m_indexBufferPoolManager },
       m_dataFileManager { &m_dataBufferPoolManager },
       m_bPlusTree { &m_indexFileManager, GenericComparator<RECORD_KEY_SIZE> { } },
