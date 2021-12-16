@@ -91,7 +91,11 @@ void Server::serve(SOCKET clientSocket) {
     do {
       // Receive the data and check whether the socket is closed
       int ret { recv(clientSocket, buffer, sizeof (buffer) - 1, 0) };
-      if (SOCKET_ERROR == ret or 0 == ret) { closesocket(clientSocket); return; }
+      if (SOCKET_ERROR == ret or 0 == ret) { 
+        close(database);
+        closesocket(clientSocket);
+        return;
+      }
       else length -= ret;
 
       // append it to message
