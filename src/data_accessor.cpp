@@ -39,7 +39,6 @@ void DataAccessor::removeRecord(RecordIDType recordID) {
   auto removeResult = targetPage->removeRecord(slotArrayIndex);
   rawTargetPage->wUnlatch();
   m_dataFileManager->unpinDataPage(pageID, true);
-  
   if (removeResult.index() == 0) { // if the record is slob
     m_dataFileManager->addFreeSpace(pageID, std::get<RecordSizeType>(removeResult));
   } else {

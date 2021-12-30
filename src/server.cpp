@@ -82,25 +82,25 @@ void Server::serve(SOCKET clientSocket) {
 
   while (true) {
     // Get message total length
-    recv(clientSocket, buffer, sizeof (buffer) - 1, 0);
-    int64_t length { atoll(buffer) };
-    memset(buffer, 0, sizeof(buffer));
+    recv(clientSocket, buffer, 8, 0);
+    int64_t length { *reinterpret_cast<int64_t *>(buffer) };
+    memset(buffer, 0, 8);
 
     // Receive message until length equals or belows zero
     std::string message;
     do {
       // Receive the data and check whether the socket is closed
-      int ret { recv(clientSocket, buffer, sizeof (buffer) - 1, 0) };
-      if (SOCKET_ERROR == ret or 0 == ret) { 
-        close(database);
+      int ret = recv(clientSocket, buffer, sizeof (buffer) - 1, 0);
+      if (SOCKET_ERROR == ret or 0 == ret) {
+        if(not notOpen) close(database);
         closesocket(clientSocket);
         return;
       }
       else length -= ret;
 
-      // append it to message
+      // Append it to message
       message += buffer;
-      memset(buffer, 0, sizeof(buffer));
+      memset(buffer, 0, ret);
     } while (length > 0);
 
     // Find the first space
@@ -155,8 +155,8 @@ void Server::serve(SOCKET clientSocket) {
       message = database->get(key).value_or("GET FAILED: KEY DOES NOT EXIST\n");
 
       // Reply length
-      std::string messageLength { std::to_string(message.length()) };
-      send(clientSocket, messageLength.c_str(), messageLength.length(), 0);
+      uint64_t messageLength { message.length() };
+      send(clientSocket, reinterpret_cast<char *>(&messageLength), 8, 0);
 
       // Reply message
       send(clientSocket, message.c_str(), message.length(), 0);

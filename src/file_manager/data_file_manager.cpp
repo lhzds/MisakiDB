@@ -86,7 +86,7 @@ void DataFileManager::addFreeSpace(PageIDType pageID, RecordSizeType recordSize)
   Page *rawMapPage = m_dataBufferPoolManager->fetchFreeSpaceMapPage(mapPageID);
   rawMapPage->wLatch();
   auto mapPage = reinterpret_cast<FreeSpaceMapFilePage *>(rawMapPage->getData());
-  mapPage->addFreeSpace(mapIndex, recordSize + DataFilePage::SLOT_SIZE);
+  mapPage->addFreeSpace(mapIndex, recordSize);
   rawMapPage->wUnlatch();
   m_dataBufferPoolManager->unpinFreeSpaceMapPage(mapPageID, true);
 }
