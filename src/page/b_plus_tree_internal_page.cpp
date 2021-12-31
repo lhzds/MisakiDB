@@ -141,11 +141,12 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::copyNFrom(MappingType *items, int size, Ind
   int oldSize = getSize();
   increaseSize(size);
   for (int i = 0; i < size; ++i) {
-    m_array[i + oldSize] = items[i];
-    Page *rawPage = indexFileManager->fetchIndexPage(valueAt(i));
+    int newIndex = i + oldSize;
+    m_array[newIndex] = items[i];
+    Page *rawPage = indexFileManager->fetchIndexPage(m_array[newIndex].second);
     auto bpTreePagePtr = reinterpret_cast<BPlusTreePage *>(rawPage->getData());
     bpTreePagePtr->setParentPageID(getPageID());
-    indexFileManager->unpinIndexPage(valueAt(i), true);
+    indexFileManager->unpinIndexPage(m_array[newIndex].second, true);
   }
 }
 
