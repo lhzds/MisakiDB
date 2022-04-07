@@ -68,7 +68,7 @@ R"(Misaki DataBase - Super fast key-value storage database with enhanced Mikoto 
 ServerPort: )" + std::to_string(MisakiDB::SERVER_PORT) + R"(
 WorkerThreadsNumber: )" + std::to_string(MisakiDB::WORKER_THREADS_NUMBER) + R"(
 IndexBufferPoolSize: )" + std::to_string(MisakiDB::INDEX_BUFFER_POOL_SIZE) + R"(
-DataBufferPoolSizr: )" + std::to_string(MisakiDB::DATA_BUFFER_POOL_SIZE) + R"(
+DataBufferPoolSize: )" + std::to_string(MisakiDB::DATA_BUFFER_POOL_SIZE) + R"(
 
 Server has been successfully started.
 
