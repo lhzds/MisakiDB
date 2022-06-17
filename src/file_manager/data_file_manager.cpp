@@ -29,9 +29,10 @@ Page *DataFileManager::allocateDataPage(RecordSizeType recordSize) {
       (m_dataBufferPoolManager->fetchFreeSpaceMapPage(i)->getData());
     
     for (int j = 0; !found && j < FreeSpaceMapFilePage::MAX_SIZE; ++j) {
-      if (mapPage->getFreeSpace(j) >= recordSize + DataFilePage::SLOT_SIZE) {
+	  auto [invalidSlotNum, freeSpace] = mapPage->getFreeSpaceEntry(j);
+      if (invalidSlotNum > 0 && freeSpace >= recordSize || freeSpace >= recordSize + DataFilePage::SLOT_SIZE) {
         found = true;
-        mapPage->subFreeSpace(j, recordSize + DataFilePage::SLOT_SIZE);
+        mapPage->subFreeSpace(j, invalidSlotNum > 0, recordSize);
         
         dataPageID = convertToDataPageID(i, j);
       }
@@ -46,7 +47,7 @@ Page *DataFileManager::allocateDataPage(RecordSizeType recordSize) {
     m_dataBufferPoolManager->unpinFreeSpaceMapPage(rawNewMapPage->getPageID(), false);
     auto newMapPage = reinterpret_cast<FreeSpaceMapFilePage *>(rawNewMapPage->getData());
     newMapPage->init();
-    newMapPage->subFreeSpace(0, recordSize + DataFilePage::SLOT_SIZE);
+    newMapPage->subFreeSpace(0, false, recordSize);
 
     dataPageID = convertToDataPageID(mapHeader->getNextPageID(), 0);
     mapHeader->incNextPageID();

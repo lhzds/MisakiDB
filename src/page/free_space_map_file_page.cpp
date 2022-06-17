@@ -4,22 +4,29 @@
 namespace MisakiDB {
 void FreeSpaceMapFilePage::init() {
   for (int i = 0; i < MAX_SIZE; ++i) {
-    m_freeSpaceMap[i] = PAGE_SIZE - DataFilePage::MIN_FIXED_SIZE;
+	m_freeSpaceMap[i].invalidSlotNum = 0;
+    m_freeSpaceMap[i].freeSpace = PAGE_SIZE - DataFilePage::MIN_FIXED_SIZE;
   }
 }
 
-RecordSizeType FreeSpaceMapFilePage::getFreeSpace(int index) const {
+FreeSpaceEntry FreeSpaceMapFilePage::getFreeSpaceEntry(int index) const {
   assert(0 <= index && index < MAX_SIZE);
   return m_freeSpaceMap[index];
 }
 
-void FreeSpaceMapFilePage::addFreeSpace(int index, RecordSizeType spaceSize) {
+void FreeSpaceMapFilePage::addFreeSpace(int index, RecordSizeType recordSize) {
   assert(0 <= index && index < MAX_SIZE);
-  m_freeSpaceMap[index] += spaceSize;
+  m_freeSpaceMap[index].freeSpace += recordSize;
+  ++m_freeSpaceMap[index].invalidSlotNum;
 }
 
-void FreeSpaceMapFilePage::subFreeSpace(int index, RecordSizeType spaceSize) {
+void FreeSpaceMapFilePage::subFreeSpace(int index, bool usedInvalidSlot, RecordSizeType recordSize) {
   assert(0 <= index && index < MAX_SIZE);
-  m_freeSpaceMap[index] -= spaceSize;
+  if (usedInvalidSlot) {
+	m_freeSpaceMap[index].freeSpace -= recordSize;
+	--m_freeSpaceMap[index].invalidSlotNum;
+  } else {
+	m_freeSpaceMap[index].freeSpace -= recordSize + DataFilePage::SLOT_SIZE;
+  }
 }
 }

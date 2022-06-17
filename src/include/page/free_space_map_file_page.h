@@ -3,18 +3,23 @@
 #include "globals.h"
 
 namespace MisakiDB {
+struct FreeSpaceEntry{
+  uint16_t invalidSlotNum;
+  uint16_t freeSpace;
+};
+
 class FreeSpaceMapFilePage {
 public:
-  static constexpr size_t MAX_SIZE = PAGE_SIZE / sizeof(RecordSizeType);
-  
+  static constexpr size_t MAX_SIZE = PAGE_SIZE / sizeof(FreeSpaceEntry);
+
   void init();
   
-  RecordSizeType getFreeSpace(int index) const;
-  void addFreeSpace(int index, RecordSizeType spaceSize);
-  void subFreeSpace(int index, RecordSizeType spaceSize);
+  FreeSpaceEntry getFreeSpaceEntry(int index) const;
+  void addFreeSpace(int index, RecordSizeType recordSize);
+  void subFreeSpace(int index, bool usedInvalidSlot, RecordSizeType recordSize);
   
 private:
-  RecordSizeType m_freeSpaceMap[MAX_SIZE] {};
+  FreeSpaceEntry m_freeSpaceMap[MAX_SIZE] {};
 };
 }
 
